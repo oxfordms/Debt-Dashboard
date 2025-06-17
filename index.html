@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Command Center</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.29.3/index.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #e0e0e0;
+            --text-muted: #9ca3af;
+            --accent-positive: #4ade80;
+            --accent-negative: #f87171;
+            --accent-warning: #fbbf24;
+            --accent-info: #60a5fa;
+            --accent-primary: #3b82f6;
+            --border: #2a2a2a;
+            --border-hover: #3a3a3a;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        h1 {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: 300;
+            color: var(--text-primary);
+        }
+        
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-pill {
+            background: var(--bg-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        
+        .stat-pill strong {
+            color: var(--accent-negative);
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .income-input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        input, select {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-hover);
+            color: var(--text-secondary);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        button {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        
+        button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        button.secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        
+        button.secondary:hover {
+            background: #3a3a3a;
+        }
+        
+        /* Split Calculator */
+        .split-calculator {
+            background: var(--bg-primary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .slider-group {
+            margin-bottom: 20px;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-tertiary);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .distribution-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .distribution-item {
+            background: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .distribution-amount {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .card:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+        
+        .card h2 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+        
+        .card-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .positive { color: var(--accent-positive); }
+        .negative { color: var(--accent-negative); }
+        .warning { color: var(--accent-warning); }
+        .info { color: var(--accent-info); }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 12px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-positive);
+            transition: width 0.3s ease;
+        }
+        
+        .progress-fill.warning {
+            background: var(--accent-warning);
+        }
+        
+        .progress-fill.danger {
+            background: var(--accent-negative);
+        }
+        
+        /* Sections */
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-weight: 400;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            font-weight: 500;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        /* Debt Timeline */
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 50px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: 11px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 3px solid var(--accent-primary);
+        }
+        
+        .timeline-content {
+            background: var(--bg-primary);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Countdown Timer */
+        .countdown {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .countdown-item {
+            text-align: center;
+        }
+        
+        .countdown-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent-warning);
+        }
+        
+        .countdown-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            color: var(--text-muted);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .close:hover {
+            color: var(--text-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+        
+        .form-group input {
+            width: 100%;
+        }
+        
+        /* Interest Bleed */
+        .bleed-rate {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .bleed-item {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .bleed-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .bleed-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-negative);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .distribution-preview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+        
+        /* Animations */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .milestone-reached {
+            animation: celebrate 0.5s ease;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Financial Command Center</h1>
+            <div class="header-stats">
+                <div class="stat-pill">
+                    Total Debt: <strong id="totalDebtHeader">$0</strong>
+                </div>
+                <div class="stat-pill">
+                    Monthly Interest: <strong id="monthlyInterestHeader">$0</strong>
+                </div>
+                <div class="stat-pill">
+                    Payoff: <strong id="payoffDateHeader">--</strong>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2>Record Override Income</h2>
+            <div class="income-input-group">
+                <input type="number" id="overrideIncome" placeholder="Enter amount" step="0.01">
+                <button onclick="recordIncome()" class="pulse">Record Income</button>
+                <button onclick="toggleSplitCalculator()" class="secondary">Adjust Split %</button>
+                <button onclick="showAddDebt()" class="secondary">Add Debt</button>
+            </div>
+            
+            <!-- Split Calculator (Hidden by default) -->
+            <div class="split-calculator" id="splitCalculator" style="display: none;">
+                <h3>Customize Income Distribution</h3>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Tithe</span>
+                        <span id="tithePercent">10%</span>
+                    </div>
+                    <input type="range" class="slider" id="titheSlider" min="0" max="20" value="10" oninput="updateSplits()">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Tax Reserve</span>
+                        <span id="taxPercent">22.9%</span>
+                    </div>
+                    <input type="range" class="slider" id="taxSlider" min="0" max="40" value="22.9" step="0.1" oninput="updateSplits()">
+                </div>
+                <div class="slider-group">
+                    <div class="slider-label">
+                        <span>Debt Payment</span>
+                        <span id="debtPercent">30%</span>
+                    </div>
+                    <input type="range" class="slider" id="debtSlider" min="0" max="60" value="30" oninput="updateSplits()">
+                </div>
+                <div class="distribution-preview" id="distributionPreview"></div>
+            </div>
+        </div>
+        
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Quarterly Tax Status -->
+            <div class="card">
+                <h2>2025 Tax Status</h2>
+                <div class="card-value" id="taxStatus">$0</div>
+                <div class="subtitle" id="taxSubtitle">Q1-Q2 Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="taxProgress" style="width: 0%"></div>
+                </div>
+                <div class="countdown" style="margin-top: 16px;">
+                    <div class="countdown-item">
+                        <div class="countdown-value" id="daysUntilTax">--</div>
+                        <div class="countdown-label">days until Q3</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Debt Overview -->
+            <div class="card">
+                <h2>Total Debt</h2>
+                <div class="card-value negative" id="totalDebt">$0</div>
+                <div class="subtitle">
+                    <span id="debtCount">0</span> accounts • 
+                    <span id="avgRate">0%</span> avg rate
+                </div>
+                <div class="bleed-rate" style="margin-top: 16px;">
+                    <div class="bleed-item">
+                        <div class="bleed-label">Daily</div>
+                        <div class="bleed-value" id="dailyInterest">$0</div>
+                    </div>
+                    <div class="bleed-item">
+                        <div class="bleed-label">Weekly</div>
+                        <div class="bleed-value" id="weeklyInterest">$0</div>
+                    </div>
+                    <div class="bleed-item">
+                        <div class="bleed-label">Monthly</div>
+                        <div class="bleed-value" id="monthlyInterest">$0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Next Target -->
+            <div class="card">
+                <h2>Debt Snowball Target</h2>
+                <div class="card-value info" id="targetDebt">--</div>
+                <div class="subtitle" id="targetInfo">--</div>
+                <div class="progress-bar">
+                    <div class="progress-fill info" id="targetProgress" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debt Details -->
+        <div class="section">
+            <h2>Debt Breakdown</h2>
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <button onclick="setDebtStrategy('snowball')" id="snowballBtn">Snowball (Smallest First)</button>
+                <button onclick="setDebtStrategy('avalanche')" id="avalancheBtn" class="secondary">Avalanche (Highest Rate)</button>
+            </div>
+            <table id="debtTable">
+                <thead>
+                    <tr>
+                        <th>Account</th>
+                        <th>Balance</th>
+                        <th>Rate</th>
+                        <th>Min Payment</th>
+                        <th>Monthly Interest</th>
+                        <th>Payoff Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="debtTableBody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Payoff Timeline -->
+        <div class="section">
+            <h2>Payoff Timeline</h2>
+            <div class="chart-container">
+                <canvas id="payoffChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Income Distribution History -->
+        <div class="section">
+            <h2>Income Distribution</h2>
+            <div class="chart-container" style="height: 250px;">
+                <canvas id="distributionChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Interest Cost Analysis -->
+        <div class="section">
+            <h2>Interest Cost Analysis</h2>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h2>Cost of Waiting</h2>
+                    <div class="bleed-rate">
+                        <div class="bleed-item">
+                            <div class="bleed-label">30 Days</div>
+                            <div class="bleed-value" id="cost30">$0</div>
+                        </div>
+                        <div class="bleed-item">
+                            <div class="bleed-label">90 Days</div>
+                            <div class="bleed-value" id="cost90">$0</div>
+                        </div>
+                        <div class="bleed-item">
+                            <div class="bleed-label">1 Year</div>
+                            <div class="bleed-value" id="cost365">$0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Total Interest Paid</h2>
+                    <div class="card-value warning" id="totalInterestPaid">$0</div>
+                    <div class="subtitle">Since tracking began</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Debt Modal -->
+        <div id="addDebtModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add New Debt</h2>
+                    <span class="close" onclick="closeModal()">&times;</span>
+                </div>
+                <form onsubmit="addDebt(event)">
+                    <div class="form-group">
+                        <label>Account Name</label>
+                        <input type="text" id="debtName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Balance</label>
+                        <input type="number" id="debtBalance" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Interest Rate (%)</label>
+                        <input type="number" id="debtRate" step="0.01" min="0" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Payment</label>
+                        <input type="number" id="debtMinPayment" step="0.01" required>
+                    </div>
+                    <button type="submit">Add Debt</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // State Management
+        const state = {
+            debts: [
+                { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58 },
+                { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58 },
+                { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84 },
+                { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538 },
+                { id: 5, name: 'Pinnacle', balance: 22078, rate: 0, minPayment: 0 }
+            ],
+            quarterlyTaxDue: 38264 / 4,
+            quarterlyPaid: 0,
+            strategy: 'snowball',
+            splits: {
+                tithe: 10,
+                tax: 22.9,
+                debt: 30
+            },
+            incomeHistory: [],
+            totalInterestPaid: 0
+        };
+        
+        // Charts
+        let payoffChart, distributionChart;
+        
+        // Initialize
+        function init() {
+            loadState();
+            updateAllCalculations();
+            initCharts();
+            updateCountdown();
+            setInterval(updateCountdown, 60000); // Update every minute
+        }
+        
+        // Load/Save State
+        function loadState() {
+            const saved = localStorage.getItem('financialState');
+            if (saved) {
+                Object.assign(state, JSON.parse(saved));
+            }
+        }
+        
+        function saveState() {
+            localStorage.setItem('financialState', JSON.stringify(state));
+        }
+        
+        // Format Currency
+        function formatCurrency(amount, showSign = false) {
+            const formatted = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(Math.abs(amount));
+            
+            if (showSign && amount < 0) {
+                return '-' + formatted;
+            }
+            return formatted;
+        }
+        
+        // Income Recording
+        function recordIncome() {
+            const income = parseFloat(document.getElementById('overrideIncome').value);
+            if (!income || income <= 0) return;
+            
+            const tithe = income * (state.splits.tithe / 100);
+            const tax = income * (state.splits.tax / 100);
+            const debt = income * (state.splits.debt / 100);
+            const flexible = income - tithe - tax - debt;
+            
+            // Track quarterly tax
+            state.quarterlyPaid += tax;
+            
+            // Record income history
+            state.incomeHistory.push({
+                date: new Date().toISOString(),
+                amount: income,
+                tithe, tax, debt, flexible
+            });
+            
+            // Apply debt payment
+            applyDebtPayment(debt);
+            
+            // Clear input
+            document.getElementById('overrideIncome').value = '';
+            
+            // Show success animation
+            showSuccessAnimation();
+            
+            saveState();
+            updateAllCalculations();
+        }
+        
+        // Debt Payment Logic
+        function applyDebtPayment(amount) {
+            const orderedDebts = getOrderedDebts();
+            let remaining = amount;
+            
+            // First, pay minimums
+            orderedDebts.forEach(debt => {
+                if (remaining >= debt.minPayment) {
+                    remaining -= debt.minPayment;
+                    debt.balance = Math.max(0, debt.balance - debt.minPayment);
+                }
+            });
+            
+            // Then apply extra to target
+            if (remaining > 0 && orderedDebts.length > 0) {
+                const target = orderedDebts[0];
+                target.balance = Math.max(0, target.balance - remaining);
+            }
+            
+            // Remove paid off debts
+            state.debts = state.debts.filter(d => d.balance > 0);
+        }
+        
+        function getOrderedDebts() {
+            return [...state.debts].sort((a, b) => {
+                if (state.strategy === 'snowball') {
+                    return a.balance - b.balance;
+                } else {
+                    return b.rate - a.rate;
+                }
+            });
+        }
+        
+        // Update Calculations
+        function updateAllCalculations() {
+            updateDebtSummary();
+            updateTaxStatus();
+            updateDebtTable();
+            updateCharts();
+            updateInterestCosts();
+            updatePayoffDates();
+        }
+        
+        function updateDebtSummary() {
+            const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
+            const debtCount = state.debts.length;
+            const avgRate = state.debts.reduce((sum, d) => sum + d.rate * d.balance, 0) / totalDebt;
+            
+            const dailyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 365), 0);
+            const weeklyInterest = dailyInterest * 7;
+            const monthlyInterest = dailyInterest * 30;
+            
+            // Track total interest
+            state.totalInterestPaid += dailyInterest;
+            
+            // Update UI
+            document.getElementById('totalDebt').textContent = formatCurrency(totalDebt, true);
+            document.getElementById('totalDebtHeader').textContent = formatCurrency(totalDebt, true);
+            document.getElementById('monthlyInterestHeader').textContent = formatCurrency(monthlyInterest, true);
+            document.getElementById('debtCount').textContent = debtCount;
+            document.getElementById('avgRate').textContent = (avgRate * 100).toFixed(1) + '%';
+            
+            document.getElementById('dailyInterest').textContent = formatCurrency(dailyInterest);
+            document.getElementById('weeklyInterest').textContent = formatCurrency(weeklyInterest);
+            document.getElementById('monthlyInterest').textContent = formatCurrency(monthlyInterest);
+            
+            // Update target
+            const target = getOrderedDebts()[0];
+            if (target) {
+                document.getElementById('targetDebt').textContent = target.name;
+                document.getElementById('targetInfo').textContent = 
+                    `${formatCurrency(target.balance)} @ ${(target.rate * 100).toFixed(1)}%`;
+                
+                const originalBalance = getOriginalBalance(target.id);
+                const progress = ((originalBalance - target.balance) / originalBalance) * 100;
+                document.getElementById('targetProgress').style.width = progress + '%';
+            }
+        }
+        
+        function updateTaxStatus() {
+            const quarterlyTarget = state.quarterlyTaxDue * 2; // Q1 + Q2
+            const behind = quarterlyTarget - state.quarterlyPaid;
+            const progress = (state.quarterlyPaid / quarterlyTarget) * 100;
+            
+            document.getElementById('taxStatus').textContent = 
+                behind > 0 ? formatCurrency(behind, true) : formatCurrency(Math.abs(behind));
+            document.getElementById('taxStatus').className = 
+                behind > 0 ? 'card-value negative' : 'card-value positive';
+            
+            const progressBar = document.getElementById('taxProgress');
+            progressBar.style.width = Math.min(100, progress) + '%';
+            progressBar.className = progress >= 100 ? 'progress-fill' : 'progress-fill danger';
+        }
+        
+        function updateDebtTable() {
+            const tbody = document.getElementById('debtTableBody');
+            tbody.innerHTML = '';
+            
+            const orderedDebts = getOrderedDebts();
+            orderedDebts.forEach((debt, index) => {
+                const monthlyInterest = debt.balance * debt.rate / 12;
+                const payoffDate = calculatePayoffDate(debt, index === 0);
+                
+                const row = document.createElement('tr');
+                if (index === 0) row.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                
+                row.innerHTML = `
+                    <td>${debt.name} ${index === 0 ? '🎯' : ''}</td>
+                    <td class="negative">${formatCurrency(debt.balance, true)}</td>
+                    <td class="warning">${(debt.rate * 100).toFixed(2)}%</td>
+                    <td>${formatCurrency(debt.minPayment)}</td>
+                    <td class="negative">${formatCurrency(monthlyInterest, true)}</td>
+                    <td>${payoffDate}</td>
+                    <td>
+                        <button onclick="removeDebt(${debt.id})" class="secondary" style="padding: 4px 12px; font-size: 0.9rem;">Remove</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function calculatePayoffDate(debt, isTarget) {
+            const monthlyPayment = isTarget ? 
+                debt.minPayment + getAverageExtraPayment() : 
+                debt.minPayment;
+                
+            if (monthlyPayment <= debt.balance * debt.rate / 12) {
+                return 'Never';
+            }
+            
+            const months = Math.log(monthlyPayment / (monthlyPayment - debt.balance * debt.rate / 12)) / 
+                          Math.log(1 + debt.rate / 12);
+                          
+            const payoffDate = new Date();
+            payoffDate.setMonth(payoffDate.getMonth() + Math.ceil(months));
+            
+            return payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        }
+        
+        function getAverageExtraPayment() {
+            if (state.incomeHistory.length === 0) return 100;
+            const avgIncome = state.incomeHistory.reduce((sum, i) => sum + i.amount, 0) / state.incomeHistory.length;
+            return avgIncome * (state.splits.debt / 100) - getTotalMinimumPayments();
+        }
+        
+        function getTotalMinimumPayments() {
+            return state.debts.reduce((sum, d) => sum + d.minPayment, 0);
+        }
+        
+        function updatePayoffDates() {
+            // Calculate overall payoff date
+            let totalBalance = state.debts.reduce((sum, d) => sum + d.balance, 0);
+            const avgMonthlyPayment = getAverageMonthlyPayment();
+            
+            if (avgMonthlyPayment > 0) {
+                let months = 0;
+                let projectedDebts = state.debts.map(d => ({...d}));
+                
+                while (totalBalance > 0 && months < 360) { // Max 30 years
+                    months++;
+                    // Apply payments using current strategy
+                    let payment = avgMonthlyPayment;
+                    const ordered = projectedDebts.sort((a, b) => {
+                        if (state.strategy === 'snowball') return a.balance - b.balance;
+                        return b.rate - a.rate;
+                    });
+                    
+                    ordered.forEach(debt => {
+                        if (debt.balance > 0) {
+                            const interest = debt.balance * debt.rate / 12;
+                            const principal = Math.min(payment, debt.balance + interest);
+                            debt.balance = Math.max(0, debt.balance + interest - principal);
+                            payment -= principal;
+                        }
+                    });
+                    
+                    totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
+                }
+                
+                const payoffDate = new Date();
+                payoffDate.setMonth(payoffDate.getMonth() + months);
+                document.getElementById('payoffDateHeader').textContent = 
+                    payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+            }
+        }
+        
+        function getAverageMonthlyPayment() {
+            if (state.incomeHistory.length === 0) return getTotalMinimumPayments();
+            const avgIncome = state.incomeHistory.reduce((sum, i) => sum + i.amount, 0) / state.incomeHistory.length;
+            return avgIncome * (state.splits.debt / 100);
+        }
+        
+        // Charts
+        function initCharts() {
+            // Payoff Chart
+            const payoffCtx = document.getElementById('payoffChart').getContext('2d');
+            payoffChart = new Chart(payoffCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Total Debt',
+                        data: [],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => formatCurrency(value)
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Distribution Chart
+            const distCtx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(distCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tithe', 'Tax', 'Debt', 'Flexible'],
+                    datasets: [{
+                        data: [10, 22.9, 30, 37.1],
+                        backgroundColor: ['#60a5fa', '#fbbf24', '#f87171', '#4ade80']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateCharts() {
+            // Update payoff projection
+            const months = 24;
+            const labels = [];
+            const data = [];
+            
+            let projectedDebts = state.debts.map(d => ({...d}));
+            let totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
+            
+            for (let i = 0; i <= months; i++) {
+                const date = new Date();
+                date.setMonth(date.getMonth() + i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+                data.push(totalBalance);
+                
+                if (i < months) {
+                    // Apply projected payments
+                    const payment = getAverageMonthlyPayment();
+                    projectedDebts.forEach(debt => {
+                        if (debt.balance > 0) {
+                            const interest = debt.balance * debt.rate / 12;
+                            debt.balance = Math.max(0, debt.balance + interest - payment / projectedDebts.length);
+                        }
+                    });
+                    totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
+                }
+            }
+            
+            payoffChart.data.labels = labels;
+            payoffChart.data.datasets[0].data = data;
+            payoffChart.update();
+            
+            // Update distribution chart
+            const splits = [
+                state.splits.tithe,
+                state.splits.tax,
+                state.splits.debt,
+                100 - state.splits.tithe - state.splits.tax - state.splits.debt
+            ];
+            distributionChart.data.datasets[0].data = splits;
+            distributionChart.update();
+        }
+        
+        // Interest Costs
+        function updateInterestCosts() {
+            const dailyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 365), 0);
+            
+            document.getElementById('cost30').textContent = formatCurrency(dailyInterest * 30);
+            document.getElementById('cost90').textContent = formatCurrency(dailyInterest * 90);
+            document.getElementById('cost365').textContent = formatCurrency(dailyInterest * 365);
+            document.getElementById('totalInterestPaid').textContent = formatCurrency(state.totalInterestPaid);
+        }
+        
+        // Countdown
+        function updateCountdown() {
+            const now = new Date();
+            const q3Date = new Date(now.getFullYear(), 8, 15); // Sept 15
+            if (now > q3Date) q3Date.setFullYear(q3Date.getFullYear() + 1);
+            
+            const days = Math.ceil((q3Date - now) / (1000 * 60 * 60 * 24));
+            document.getElementById('daysUntilTax').textContent = days;
+        }
+        
+        // Split Calculator
+        function toggleSplitCalculator() {
+            const calc = document.getElementById('splitCalculator');
+            calc.style.display = calc.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function updateSplits() {
+            state.splits.tithe = parseFloat(document.getElementById('titheSlider').value);
+            state.splits.tax = parseFloat(document.getElementById('taxSlider').value);
+            state.splits.debt = parseFloat(document.getElementById('debtSlider').value);
+            
+            document.getElementById('tithePercent').textContent = state.splits.tithe + '%';
+            document.getElementById('taxPercent').textContent = state.splits.tax + '%';
+            document.getElementById('debtPercent').textContent = state.splits.debt + '%';
+            
+            // Preview with $1000
+            const preview = document.getElementById('distributionPreview');
+            const income = 1000;
+            const tithe = income * (state.splits.tithe / 100);
+            const tax = income * (state.splits.tax / 100);
+            const debt = income * (state.splits.debt / 100);
+            const flexible = income - tithe - tax - debt;
+            
+            preview.innerHTML = `
+                <div class="distribution-item">
+                    <div>Tithe</div>
+                    <div class="distribution-amount info">${formatCurrency(tithe)}</div>
+                </div>
+                <div class="distribution-item">
+                    <div>Tax</div>
+                    <div class="distribution-amount warning">${formatCurrency(tax)}</div>
+                </div>
+                <div class="distribution-item">
+                    <div>Debt</div>
+                    <div class="distribution-amount negative">${formatCurrency(debt)}</div>
+                </div>
+                <div class="distribution-item">
+                    <div>Flexible</div>
+                    <div class="distribution-amount positive">${formatCurrency(flexible)}</div>
+                </div>
+            `;
+            
+            saveState();
+            updateCharts();
+        }
+        
+        // Debt Management
+        function setDebtStrategy(strategy) {
+            state.strategy = strategy;
+            document.getElementById('snowballBtn').className = strategy === 'snowball' ? '' : 'secondary';
+            document.getElementById('avalancheBtn').className = strategy === 'avalanche' ? '' : 'secondary';
+            saveState();
+            updateAllCalculations();
+        }
+        
+        function showAddDebt() {
+            document.getElementById('addDebtModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('addDebtModal').style.display = 'none';
+        }
+        
+        function addDebt(event) {
+            event.preventDefault();
+            
+            const debt = {
+                id: Date.now(),
+                name: document.getElementById('debtName').value,
+                balance: parseFloat(document.getElementById('debtBalance').value),
+                rate: parseFloat(document.getElementById('debtRate').value) / 100,
+                minPayment: parseFloat(document.getElementById('debtMinPayment').value)
+            };
+            
+            state.debts.push(debt);
+            saveState();
+            updateAllCalculations();
+            closeModal();
+            
+            // Reset form
+            event.target.reset();
+        }
+        
+        function removeDebt(id) {
+            if (confirm('Remove this debt?')) {
+                state.debts = state.debts.filter(d => d.id !== id);
+                saveState();
+                updateAllCalculations();
+            }
+        }
+        
+        function getOriginalBalance(id) {
+            // This would need to be tracked separately in a real app
+            const originals = {
+                1: 10066, 2: 13153, 3: 33814, 4: 17968, 5: 22078
+            };
+            return originals[id] || state.debts.find(d => d.id === id)?.balance || 0;
+        }
+        
+        // Success Animation
+        function showSuccessAnimation() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.classList.add('milestone-reached');
+                setTimeout(() => card.classList.remove('milestone-reached'), 500);
+            });
+        }
+        
+        // Initialize on load
+        window.onload = init;
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('addDebtModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>
