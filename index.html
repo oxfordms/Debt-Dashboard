@@ -792,8 +792,9 @@
                         <label>Income Type</label>
                         <select id="incomeType">
                             <option value="salary">Salary (W-2)</option>
-                            <option value="commission">Commission</option>
-                            <option value="bonus">Bonus</option>
+                            <option value="commission">Commission (1099)</option>
+                            <option value="override">Override (1099)</option>
+                            <option value="bonus">Bonus (W-2)</option>
                             <option value="distribution">Distribution (K-1)</option>
                             <option value="other">Other</option>
                         </select>
@@ -811,7 +812,7 @@
                     <input type="checkbox" id="useDefaultSplit" checked>
                     <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax, rest to debt)
                         <span class="help-icon">ⓘ
-                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry.</span>
+                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission and Override).</span>
                         </span>
                     </label>
                 </div>
@@ -847,7 +848,7 @@
                     <h2>
                         2025 Tax Status
                         <span class="help-icon">ⓘ
-                            <span class="tooltip">Tracks your quarterly estimated tax payments. Shows progress toward Q1-Q2 combined goal. Green = on track, Yellow = slightly behind, Red = significantly behind.</span>
+                            <span class="tooltip">Tracks your quarterly estimated tax payments for 1099 income only. Commission and Override income contribute to this goal. W-2 income (Salary, Bonus) and K-1 distributions do not affect this since taxes are handled differently for those income types.</span>
                         </span>
                     </h2>
                     <div class="card-value" id="taxStatus">$0</div>
@@ -1201,8 +1202,9 @@
                         <label>Income Type</label>
                         <select id="editIncomeType">
                             <option value="salary">Salary (W-2)</option>
-                            <option value="commission">Commission</option>
-                            <option value="bonus">Bonus</option>
+                            <option value="commission">Commission (1099)</option>
+                            <option value="override">Override (1099)</option>
+                            <option value="bonus">Bonus (W-2)</option>
                             <option value="distribution">Distribution (K-1)</option>
                             <option value="other">Other</option>
                         </select>
@@ -1430,12 +1432,38 @@
                     // Clean up income history data to prevent errors
                     cleanupIncomeData();
                     
+                    // Recalculate quarterlyPaid based on 1099 income only
+                    recalculateQuarterlyTax();
+                    
                 } catch (error) {
                     console.error('Error loading saved state:', error);
                     // Reset to defaults if data is corrupted
                     resetToDefaults();
                 }
             }
+        }
+        
+        // Recalculate quarterly tax from 1099 income entries
+        function recalculateQuarterlyTax() {
+            state.quarterlyPaid = 0;
+            
+            // Add up tax amounts from 1099 income only
+            state.incomeHistory.forEach(entry => {
+                if (entry && (entry.type === 'commission' || entry.type === 'override') && entry.tax) {
+                    state.quarterlyPaid += entry.tax;
+                }
+            });
+            
+            // Add manual tax payments
+            if (state.paymentHistory) {
+                state.paymentHistory.forEach(payment => {
+                    if (payment && payment.type === 'tax' && payment.amount) {
+                        state.quarterlyPaid += payment.amount;
+                    }
+                });
+            }
+            
+            console.log('Recalculated quarterly tax paid:', state.quarterlyPaid);
         }
         
         // Clean up any problematic income data
@@ -1568,8 +1596,10 @@
             const debt = income * (splits.debt / 100);
             const flexible = income * (splits.flexible / 100);
             
-            // Track quarterly tax
-            state.quarterlyPaid += tax;
+            // Track quarterly tax - only for 1099 income types
+            if (type === 'commission' || type === 'override') {
+                state.quarterlyPaid += tax;
+            }
             
             // Record income history
             const entry = {
@@ -1631,6 +1661,7 @@
             
             // Get old values to reverse tax tracking
             const oldTax = entry.tax;
+            const oldType = entry.type;
             
             // Get new values
             const newAmount = parseFloat(document.getElementById('editIncomeAmount').value);
@@ -1650,8 +1681,15 @@
             const newDebt = newAmount * (newSplits.debt / 100);
             const newFlexible = newAmount * (newSplits.flexible / 100);
             
-            // Update tax tracking
-            state.quarterlyPaid = state.quarterlyPaid - oldTax + newTax;
+            // Update tax tracking - only for 1099 income types
+            if (oldType === 'commission' || oldType === 'override') {
+                state.quarterlyPaid -= oldTax;
+            }
+            if (newType === 'commission' || newType === 'override') {
+                state.quarterlyPaid += newTax;
+            }
+            // Ensure quarterlyPaid doesn't go negative
+            state.quarterlyPaid = Math.max(0, state.quarterlyPaid);
             
             // Update entry
             entry.amount = newAmount;
@@ -1763,8 +1801,10 @@
             if (confirm('Delete this income entry? This will also reverse any debt payments made from this income.')) {
                 const entry = state.incomeHistory.find(e => e.id === id);
                 if (entry) {
-                    // Reverse tax tracking
-                    state.quarterlyPaid = Math.max(0, state.quarterlyPaid - entry.tax);
+                    // Reverse tax tracking - only for 1099 income types
+                    if (entry.type === 'commission' || entry.type === 'override') {
+                        state.quarterlyPaid = Math.max(0, state.quarterlyPaid - entry.tax);
+                    }
                     
                     // Note: Reversing debt payments is complex and would need transaction tracking
                     // For now, we'll just remove the entry
@@ -1779,8 +1819,9 @@
         function getIncomeTypeLabel(type) {
             const labels = {
                 salary: 'Salary (W-2)',
-                commission: 'Commission',
-                bonus: 'Bonus',
+                commission: 'Commission (1099)',
+                override: 'Override (1099)',
+                bonus: 'Bonus (W-2)',
                 distribution: 'Distribution (K-1)',
                 other: 'Other'
             };
