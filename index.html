@@ -113,6 +113,15 @@
             position: relative;
         }
         
+        .stat-pill .help-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 16px;
+            height: 16px;
+            font-size: 11px;
+        }
+        
         .stat-pill-label {
             font-size: 0.85rem;
             color: var(--text-muted);
@@ -192,8 +201,17 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s ease;
-            z-index: 1000;
+            z-index: 10000;
             margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Adjust tooltip position if it would be cut off */
+        .header .help-icon .tooltip {
+            bottom: auto;
+            top: 100%;
+            margin-bottom: 0;
+            margin-top: 8px;
         }
         
         .help-icon:hover .tooltip {
@@ -664,6 +682,17 @@
             
             .tabs {
                 flex-wrap: wrap;
+                overflow-x: auto;
+                scrollbar-width: thin;
+            }
+            
+            .tabs::-webkit-scrollbar {
+                height: 6px;
+            }
+            
+            .tabs::-webkit-scrollbar-thumb {
+                background: var(--border-hover);
+                border-radius: 3px;
             }
             
             .tab {
@@ -746,36 +775,116 @@
             font-weight: 600;
             color: var(--accent-negative);
         }
+        
+        /* Quarterly Tax Cards */
+        .quarter-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .quarter-card.current {
+            border-color: var(--accent-primary);
+        }
+        
+        .quarter-card.overdue {
+            border-color: var(--accent-negative);
+            background: rgba(248, 113, 113, 0.05);
+        }
+        
+        .quarter-card h3 {
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+        
+        .quarter-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .quarter-status.paid {
+            background: rgba(74, 222, 128, 0.2);
+            color: var(--accent-positive);
+        }
+        
+        .quarter-status.due {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--accent-warning);
+        }
+        
+        .quarter-status.overdue {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--accent-negative);
+        }
+        
+        .quarter-details {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .quarter-detail {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        
+        .quarter-detail-label {
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>Financial Command Center</h1>
+            <div>
+                <h1>Financial Command Center</h1>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+                    v2025.06.17.1 • Last saved: <span id="lastSaved">Never</span>
+                </div>
+            </div>
             <div class="header-stats">
                 <div class="stat-pill" id="totalDebtPill">
                     <div class="stat-pill-label">Total Debt</div>
                     <div class="stat-pill-value" id="totalDebtHeader">$0</div>
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Green = Below $50k (Great!)<br>Yellow = $50k-$75k (Caution)<br>Red = Above $75k (Focus needed)</span>
+                    </span>
                 </div>
                 <div class="stat-pill" id="monthlyInterestPill">
                     <div class="stat-pill-label">Monthly Interest</div>
                     <div class="stat-pill-value" id="monthlyInterestHeader">$0</div>
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Green = Below $500/mo<br>Yellow = $500-$800/mo<br>Red = Above $800/mo</span>
+                    </span>
                 </div>
                 <div class="stat-pill" id="payoffDatePill">
                     <div class="stat-pill-label">Debt Free Date</div>
                     <div class="stat-pill-value" id="payoffDateHeader">--</div>
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Based on average payment history and current strategy</span>
+                    </span>
                 </div>
             </div>
         </div>
         
         <!-- Tabs -->
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('overview')">Overview</div>
-            <div class="tab" onclick="switchTab('income')">Income</div>
-            <div class="tab" onclick="switchTab('debts')">Debts</div>
-            <div class="tab" onclick="switchTab('payments')">Manual Payments</div>
-            <div class="tab" onclick="switchTab('settings')">Settings</div>
+            <div class="tab active" onclick="switchTab('overview', event)">Overview</div>
+            <div class="tab" onclick="switchTab('income', event)">Income</div>
+            <div class="tab" onclick="switchTab('debts', event)">Debts</div>
+            <div class="tab" onclick="switchTab('taxes', event)">Quarterly Taxes</div>
+            <div class="tab" onclick="switchTab('payments', event)">Manual Payments</div>
+            <div class="tab" onclick="switchTab('settings', event)">Settings</div>
         </div>
         
         <!-- Overview Tab -->
@@ -792,10 +901,12 @@
                         <label>Income Type</label>
                         <select id="incomeType">
                             <option value="salary">Salary (W-2)</option>
-                            <option value="commission">Commission (1099)</option>
                             <option value="override">Override (1099)</option>
-                            <option value="bonus">Bonus (W-2)</option>
+                            <option value="commission">Commission (1099)</option>
                             <option value="distribution">Distribution (K-1)</option>
+                            <option value="bonus">Bonus (W-2)</option>
+                            <option value="other-w2">Other (W-2)</option>
+                            <option value="other-1099">Other (1099)</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
@@ -858,6 +969,23 @@
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="taxProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Current Quarter Tax -->
+                <div class="card">
+                    <h2>
+                        Current Quarter Tax
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Shows unpaid estimated tax for the current quarter from 1099 income. This is NOT included in your total debt as it's not yet due.</span>
+                        </span>
+                    </h2>
+                    <div class="card-value" id="currentQuarterTax">$0</div>
+                    <div class="subtitle">
+                        <span id="currentQuarter">Q1 2025</span> • Due <span id="currentQuarterDue">Apr 15</span>
+                    </div>
+                    <div id="currentQuarterStatus" style="margin-top: 12px; font-size: 0.9rem;">
+                        <!-- Populated by JS -->
                     </div>
                 </div>
                 
@@ -956,7 +1084,7 @@
                                 <th>Tithe</th>
                                 <th>Tax Reserve</th>
                                 <th>Debt</th>
-                                <th>Flexible</th>
+                                <th>Flexible (Net)</th>
                                 <th>Type</th>
                                 <th>Notes</th>
                                 <th>Actions</th>
@@ -996,11 +1124,25 @@
                 <table id="debtTable">
                     <thead>
                         <tr>
-                            <th>Account</th>
-                            <th>Balance</th>
-                            <th>Rate</th>
-                            <th>Min Payment</th>
-                            <th>Monthly Interest</th>
+                            <th style="cursor: pointer;" onclick="sortDebts('name')">
+                                Account <span id="sort-name" style="opacity: 0.5;">↕</span>
+                            </th>
+                            <th style="cursor: pointer;" onclick="sortDebts('balance')">
+                                Balance <span id="sort-balance">↓</span>
+                            </th>
+                            <th style="cursor: pointer;" onclick="sortDebts('rate')">
+                                Rate <span id="sort-rate" style="opacity: 0.5;">↕</span>
+                            </th>
+                            <th style="cursor: pointer;" onclick="sortDebts('minPayment')" title="Minimum monthly payment required">
+                                Min Payment 
+                                <span id="sort-minPayment" style="opacity: 0.5;">↕</span>
+                                <span class="help-icon" style="position: static; margin-left: 4px;">ⓘ
+                                    <span class="tooltip">Minimum monthly payment required by the creditor</span>
+                                </span>
+                            </th>
+                            <th style="cursor: pointer;" onclick="sortDebts('monthlyInterest')">
+                                Monthly Interest <span id="sort-monthlyInterest" style="opacity: 0.5;">↕</span>
+                            </th>
                             <th>Payoff Date</th>
                             <th>Actions</th>
                         </tr>
@@ -1025,6 +1167,56 @@
                 <div class="chart-container">
                     <canvas id="payoffChart"></canvas>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Quarterly Taxes Tab -->
+        <div class="tab-content" id="taxes-tab">
+            <div class="section">
+                <h2>
+                    2025 Quarterly Tax Overview
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Tracks quarterly estimated tax payments for 1099 income. Only Commission, Override, and Other (1099) income contribute to these calculations.</span>
+                    </span>
+                </h2>
+                <div id="quarterlyBreakdown" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>1099 Income Summary</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Income Type</th>
+                            <th>Total Received</th>
+                            <th>Tax Reserved (22.9%)</th>
+                            <th>Entry Count</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taxIncomeBreakdown">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>Tax Payment History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Quarter</th>
+                            <th>Amount</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taxPaymentHistory">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
             </div>
         </div>
         
@@ -1202,10 +1394,12 @@
                         <label>Income Type</label>
                         <select id="editIncomeType">
                             <option value="salary">Salary (W-2)</option>
-                            <option value="commission">Commission (1099)</option>
                             <option value="override">Override (1099)</option>
-                            <option value="bonus">Bonus (W-2)</option>
+                            <option value="commission">Commission (1099)</option>
                             <option value="distribution">Distribution (K-1)</option>
+                            <option value="bonus">Bonus (W-2)</option>
+                            <option value="other-w2">Other (W-2)</option>
+                            <option value="other-1099">Other (1099)</option>
                             <option value="other">Other</option>
                         </select>
                     </div>
@@ -1284,6 +1478,37 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Edit Payment Modal -->
+        <div id="editPaymentModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Payment</h2>
+                    <span class="close" onclick="closeModal('editPaymentModal')">&times;</span>
+                </div>
+                <form onsubmit="savePaymentEdit(event)">
+                    <div class="form-group">
+                        <label>Payment Amount</label>
+                        <input type="number" id="editPaymentAmount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Date</label>
+                        <input type="date" id="editPaymentDate" required>
+                    </div>
+                    <div class="form-group" id="editPaymentAccountGroup">
+                        <label id="editPaymentAccountLabel">Account</label>
+                        <select id="editPaymentAccount">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes (Optional)</label>
+                        <input type="text" id="editPaymentNotes">
+                    </div>
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -1314,7 +1539,9 @@
             incomeHistory: [],
             paymentHistory: [],
             totalInterestPaid: 0,
-            currentEditingIncomeId: null
+            currentEditingIncomeId: null,
+            currentEditingPaymentId: null,
+            debtSort: { column: 'balance', ascending: true }
         };
         
         // Charts
@@ -1370,6 +1597,15 @@
                 
                 console.log('Financial Command Center initialized successfully');
                 
+                // Update last saved time if available
+                const lastSaved = localStorage.getItem('financialStateLastSaved');
+                if (lastSaved) {
+                    const lastSavedEl = document.getElementById('lastSaved');
+                    if (lastSavedEl) {
+                        lastSavedEl.textContent = lastSaved;
+                    }
+                }
+                
             } catch (error) {
                 console.error('Error during initialization:', error);
                 alert('There was an error loading your financial data. The app will continue with default settings.');
@@ -1386,12 +1622,25 @@
         }
         
         // Tab Management
-        function switchTab(tabName) {
+        function switchTab(tabName, event) {
             // Update tab buttons
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            event.target.classList.add('active');
+            
+            // If called from quickPayTax, find the correct tab
+            if (!event) {
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    if (tab.textContent.toLowerCase().includes(tabName.toLowerCase()) ||
+                        (tabName === 'payments' && tab.textContent.includes('Manual Payments')) ||
+                        (tabName === 'taxes' && tab.textContent.includes('Quarterly Taxes'))) {
+                        tab.classList.add('active');
+                    }
+                });
+            } else {
+                event.target.classList.add('active');
+            }
             
             // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => {
@@ -1428,6 +1677,9 @@
                     if (!state.paymentHistory) {
                         state.paymentHistory = [];
                     }
+                    if (!state.debtSort) {
+                        state.debtSort = { column: 'balance', ascending: true };
+                    }
                     
                     // Clean up income history data to prevent errors
                     cleanupIncomeData();
@@ -1449,7 +1701,7 @@
             
             // Add up tax amounts from 1099 income only
             state.incomeHistory.forEach(entry => {
-                if (entry && (entry.type === 'commission' || entry.type === 'override') && entry.tax) {
+                if (entry && (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099') && entry.tax) {
                     state.quarterlyPaid += entry.tax;
                 }
             });
@@ -1543,12 +1795,21 @@
                 incomeHistory: [],
                 paymentHistory: [],
                 totalInterestPaid: 0,
-                currentEditingIncomeId: null
+                currentEditingIncomeId: null,
+                currentEditingPaymentId: null,
+                debtSort: { column: 'balance', ascending: true }
             });
         }
         
         function saveState() {
             localStorage.setItem('financialState', JSON.stringify(state));
+            // Update last saved timestamp
+            const timestamp = new Date().toLocaleString();
+            localStorage.setItem('financialStateLastSaved', timestamp);
+            const lastSavedEl = document.getElementById('lastSaved');
+            if (lastSavedEl) {
+                lastSavedEl.textContent = timestamp;
+            }
         }
         
         // Format Currency
@@ -1597,7 +1858,7 @@
             const flexible = income * (splits.flexible / 100);
             
             // Track quarterly tax - only for 1099 income types
-            if (type === 'commission' || type === 'override') {
+            if (type === 'commission' || type === 'override' || type === 'other-1099') {
                 state.quarterlyPaid += tax;
             }
             
@@ -1682,10 +1943,10 @@
             const newFlexible = newAmount * (newSplits.flexible / 100);
             
             // Update tax tracking - only for 1099 income types
-            if (oldType === 'commission' || oldType === 'override') {
+            if (oldType === 'commission' || oldType === 'override' || oldType === 'other-1099') {
                 state.quarterlyPaid -= oldTax;
             }
-            if (newType === 'commission' || newType === 'override') {
+            if (newType === 'commission' || newType === 'override' || newType === 'other-1099') {
                 state.quarterlyPaid += newTax;
             }
             // Ensure quarterlyPaid doesn't go negative
@@ -1802,7 +2063,7 @@
                 const entry = state.incomeHistory.find(e => e.id === id);
                 if (entry) {
                     // Reverse tax tracking - only for 1099 income types
-                    if (entry.type === 'commission' || entry.type === 'override') {
+                    if (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099') {
                         state.quarterlyPaid = Math.max(0, state.quarterlyPaid - entry.tax);
                     }
                     
@@ -1823,6 +2084,8 @@
                 override: 'Override (1099)',
                 bonus: 'Bonus (W-2)',
                 distribution: 'Distribution (K-1)',
+                'other-w2': 'Other (W-2)',
+                'other-1099': 'Other (1099)',
                 other: 'Other'
             };
             
@@ -1954,6 +2217,7 @@
                     <td class="negative">${formatCurrency(payment.amount)}</td>
                     <td>${payment.notes || '-'}</td>
                     <td>
+                        <button onclick="editPayment(${payment.id})" class="edit-btn">✏️</button>
                         <button onclick="deletePayment(${payment.id})" class="delete-btn">🗑️</button>
                     </td>
                 `;
@@ -1973,6 +2237,81 @@
                 saveState();
                 updateAllCalculations();
             }
+        }
+        
+        // Payment Editing
+        function editPayment(id) {
+            const payment = state.paymentHistory.find(p => p.id === id);
+            if (!payment) return;
+            
+            state.currentEditingPaymentId = id;
+            
+            // Populate edit form
+            document.getElementById('editPaymentAmount').value = payment.amount;
+            document.getElementById('editPaymentDate').value = payment.date;
+            document.getElementById('editPaymentNotes').value = payment.notes || '';
+            
+            // Set up account dropdown based on payment type
+            const accountSelect = document.getElementById('editPaymentAccount');
+            accountSelect.innerHTML = '';
+            
+            if (payment.type === 'debt') {
+                document.getElementById('editPaymentAccountLabel').textContent = 'Debt Account';
+                // Add current debt accounts
+                state.debts.forEach(debt => {
+                    const option = document.createElement('option');
+                    option.value = debt.name;
+                    option.textContent = debt.name;
+                    option.selected = debt.name === payment.account;
+                    accountSelect.appendChild(option);
+                });
+            } else {
+                document.getElementById('editPaymentAccountLabel').textContent = 'Quarter';
+                // Add quarters
+                ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'].forEach(quarter => {
+                    const option = document.createElement('option');
+                    option.value = quarter;
+                    option.textContent = quarter;
+                    option.selected = quarter === payment.account;
+                    accountSelect.appendChild(option);
+                });
+            }
+            
+            document.getElementById('editPaymentModal').style.display = 'block';
+        }
+        
+        function savePaymentEdit(event) {
+            event.preventDefault();
+            
+            const id = state.currentEditingPaymentId;
+            const payment = state.paymentHistory.find(p => p.id === id);
+            if (!payment) return;
+            
+            // Get old values
+            const oldAmount = payment.amount;
+            const oldType = payment.type;
+            
+            // Get new values
+            const newAmount = parseFloat(document.getElementById('editPaymentAmount').value);
+            const newDate = document.getElementById('editPaymentDate').value;
+            const newAccount = document.getElementById('editPaymentAccount').value;
+            const newNotes = document.getElementById('editPaymentNotes').value;
+            
+            // Update tax tracking if it's a tax payment
+            if (oldType === 'tax') {
+                state.quarterlyPaid = state.quarterlyPaid - oldAmount + newAmount;
+                state.quarterlyPaid = Math.max(0, state.quarterlyPaid);
+            }
+            
+            // Update payment
+            payment.amount = newAmount;
+            payment.date = newDate;
+            payment.account = newAccount;
+            payment.notes = newNotes;
+            
+            closeModal('editPaymentModal');
+            saveState();
+            updateAllCalculations();
         }
         
         // What-If Calculator
@@ -2124,7 +2463,8 @@
                     ['Charts', updateCharts],
                     ['Payoff Dates', updatePayoffDates],
                     ['Header Status', updateHeaderStatus],
-                    ['Debt Selects', updateDebtSelects]
+                    ['Debt Selects', updateDebtSelects],
+                    ['Quarterly Taxes', updateQuarterlyTaxes]
                 ];
                 
                 updates.forEach(([name, updateFunction]) => {
@@ -2220,6 +2560,76 @@
             const progressBar = document.getElementById('taxProgress');
             progressBar.style.width = Math.min(100, progress) + '%';
             progressBar.className = progress >= 100 ? 'progress-fill' : 'progress-fill danger';
+            
+            // Update current quarter tax
+            updateCurrentQuarterTax();
+        }
+        
+        function updateCurrentQuarterTax() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            let currentQuarter, dueDate;
+            
+            if (currentMonth < 3) {
+                currentQuarter = 'Q1 2025';
+                dueDate = new Date('2025-04-15');
+            } else if (currentMonth < 6) {
+                currentQuarter = 'Q2 2025';
+                dueDate = new Date('2025-06-16');
+            } else if (currentMonth < 9) {
+                currentQuarter = 'Q3 2025';
+                dueDate = new Date('2025-09-15');
+            } else {
+                currentQuarter = 'Q4 2025';
+                dueDate = new Date('2026-01-15');
+            }
+            
+            // Calculate current quarter tax from 1099 income
+            let currentQuarterTax = 0;
+            state.incomeHistory.forEach(entry => {
+                if (entry && (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099')) {
+                    const incomeDate = new Date(entry.date);
+                    const incomeMonth = incomeDate.getMonth();
+                    
+                    // Check if income is in current quarter
+                    if ((currentQuarter === 'Q1 2025' && incomeMonth < 3) ||
+                        (currentQuarter === 'Q2 2025' && incomeMonth >= 3 && incomeMonth < 6) ||
+                        (currentQuarter === 'Q3 2025' && incomeMonth >= 6 && incomeMonth < 9) ||
+                        (currentQuarter === 'Q4 2025' && incomeMonth >= 9)) {
+                        currentQuarterTax += entry.tax || 0;
+                    }
+                }
+            });
+            
+            // Subtract payments made for current quarter
+            let currentQuarterPaid = 0;
+            state.paymentHistory.forEach(payment => {
+                if (payment && payment.type === 'tax' && payment.account === currentQuarter) {
+                    currentQuarterPaid += payment.amount;
+                }
+            });
+            
+            const unpaidTax = Math.max(0, currentQuarterTax - currentQuarterPaid);
+            const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            
+            // Update UI
+            document.getElementById('currentQuarterTax').textContent = formatCurrency(unpaidTax);
+            document.getElementById('currentQuarterTax').className = unpaidTax > 0 ? 'card-value warning' : 'card-value positive';
+            document.getElementById('currentQuarter').textContent = currentQuarter;
+            document.getElementById('currentQuarterDue').textContent = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            const statusEl = document.getElementById('currentQuarterStatus');
+            if (unpaidTax > 0) {
+                if (daysUntilDue < 0) {
+                    statusEl.innerHTML = `<span style="color: var(--accent-negative);">⚠️ Overdue by ${Math.abs(daysUntilDue)} days</span>`;
+                } else if (daysUntilDue < 30) {
+                    statusEl.innerHTML = `<span style="color: var(--accent-warning);">⏰ Due in ${daysUntilDue} days</span>`;
+                } else {
+                    statusEl.innerHTML = `<span style="color: var(--text-muted);">Due in ${daysUntilDue} days</span>`;
+                }
+            } else {
+                statusEl.innerHTML = `<span style="color: var(--accent-positive);">✓ Paid in full</span>`;
+            }
         }
         
         function updateIncomesSummary() {
@@ -2304,16 +2714,59 @@
             const tbody = document.getElementById('debtTableBody');
             tbody.innerHTML = '';
             
+            // Get sorted debts
+            let sortedDebts = [...state.debts];
+            
+            // Add calculated fields for sorting
+            sortedDebts = sortedDebts.map(debt => ({
+                ...debt,
+                monthlyInterest: debt.balance * debt.rate / 12
+            }));
+            
+            // Apply sorting
+            sortedDebts.sort((a, b) => {
+                let aVal = a[state.debtSort.column];
+                let bVal = b[state.debtSort.column];
+                
+                if (state.debtSort.column === 'name') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+                
+                if (state.debtSort.ascending) {
+                    return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+                } else {
+                    return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
+                }
+            });
+            
+            // Update sort indicators
+            ['name', 'balance', 'rate', 'minPayment', 'monthlyInterest'].forEach(col => {
+                const indicator = document.getElementById(`sort-${col}`);
+                if (indicator) {
+                    if (state.debtSort.column === col) {
+                        indicator.textContent = state.debtSort.ascending ? '↑' : '↓';
+                        indicator.style.opacity = '1';
+                    } else {
+                        indicator.textContent = '↕';
+                        indicator.style.opacity = '0.5';
+                    }
+                }
+            });
+            
+            // Get ordered debts for targeting
             const orderedDebts = getOrderedDebts();
-            orderedDebts.forEach((debt, index) => {
-                const monthlyInterest = debt.balance * debt.rate / 12;
-                const payoffDate = calculatePayoffDate(debt, index === 0);
+            const targetDebtId = orderedDebts.length > 0 ? orderedDebts[0].id : null;
+            
+            sortedDebts.forEach((debt) => {
+                const monthlyInterest = debt.monthlyInterest;
+                const payoffDate = calculatePayoffDate(debt, debt.id === targetDebtId);
                 
                 const row = document.createElement('tr');
-                if (index === 0) row.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                if (debt.id === targetDebtId) row.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
                 
                 row.innerHTML = `
-                    <td>${debt.name} ${index === 0 ? '🎯' : ''}</td>
+                    <td>${debt.name} ${debt.id === targetDebtId ? '🎯' : ''}</td>
                     <td class="negative">${formatCurrency(debt.balance, true)}</td>
                     <td class="warning">${(debt.rate * 100).toFixed(2)}%</td>
                     <td>${formatCurrency(debt.minPayment)}</td>
@@ -2325,6 +2778,18 @@
                 `;
                 tbody.appendChild(row);
             });
+        }
+        
+        // Sort debts function
+        function sortDebts(column) {
+            if (state.debtSort.column === column) {
+                state.debtSort.ascending = !state.debtSort.ascending;
+            } else {
+                state.debtSort.column = column;
+                state.debtSort.ascending = true;
+            }
+            
+            updateDebtTable();
         }
         
         function calculatePayoffDate(debt, isTarget) {
@@ -2867,7 +3332,216 @@
             });
         }
         
-        // Initialize on load
+        // Quarterly Taxes Update
+        function updateQuarterlyTaxes() {
+            // Define quarters with their due dates
+            const quarters = [
+                { name: 'Q1 2025', dueDate: new Date('2025-04-15'), months: ['Jan', 'Feb', 'Mar'] },
+                { name: 'Q2 2025', dueDate: new Date('2025-06-16'), months: ['Apr', 'May', 'Jun'] },
+                { name: 'Q3 2025', dueDate: new Date('2025-09-15'), months: ['Jul', 'Aug', 'Sep'] },
+                { name: 'Q4 2025', dueDate: new Date('2026-01-15'), months: ['Oct', 'Nov', 'Dec'] }
+            ];
+            
+            const today = new Date();
+            const quarterlyBreakdown = document.getElementById('quarterlyBreakdown');
+            
+            if (!quarterlyBreakdown) return;
+            
+            quarterlyBreakdown.innerHTML = '';
+            
+            // Calculate 1099 income by quarter
+            const incomeByQuarter = {};
+            const taxByQuarter = {};
+            const paymentsByQuarter = {};
+            
+            // Initialize quarters
+            quarters.forEach(q => {
+                incomeByQuarter[q.name] = 0;
+                taxByQuarter[q.name] = 0;
+                paymentsByQuarter[q.name] = 0;
+            });
+            
+            // Process 1099 income
+            state.incomeHistory.forEach(entry => {
+                if (entry && (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099')) {
+                    const date = new Date(entry.date);
+                    const month = date.getMonth();
+                    let quarter;
+                    
+                    if (month < 3) quarter = 'Q1 2025';
+                    else if (month < 6) quarter = 'Q2 2025';
+                    else if (month < 9) quarter = 'Q3 2025';
+                    else quarter = 'Q4 2025';
+                    
+                    incomeByQuarter[quarter] += entry.amount || 0;
+                    taxByQuarter[quarter] += entry.tax || 0;
+                }
+            });
+            
+            // Process tax payments
+            state.paymentHistory.forEach(payment => {
+                if (payment && payment.type === 'tax') {
+                    paymentsByQuarter[payment.account] = (paymentsByQuarter[payment.account] || 0) + payment.amount;
+                }
+            });
+            
+            // Create quarter cards
+            quarters.forEach(quarter => {
+                const card = document.createElement('div');
+                card.className = 'quarter-card';
+                
+                const daysUntilDue = Math.ceil((quarter.dueDate - today) / (1000 * 60 * 60 * 24));
+                const taxReserved = taxByQuarter[quarter.name];
+                const taxPaid = paymentsByQuarter[quarter.name];
+                const taxDue = taxReserved - taxPaid;
+                
+                // Determine status
+                let status = '';
+                let statusClass = '';
+                
+                if (taxPaid >= taxReserved) {
+                    status = 'Paid';
+                    statusClass = 'paid';
+                } else if (daysUntilDue < 0) {
+                    status = 'Overdue';
+                    statusClass = 'overdue';
+                    card.classList.add('overdue');
+                } else if (daysUntilDue < 30) {
+                    status = 'Due Soon';
+                    statusClass = 'due';
+                    card.classList.add('current');
+                } else {
+                    status = 'Upcoming';
+                    statusClass = '';
+                }
+                
+                card.innerHTML = `
+                    <h3>${quarter.name}</h3>
+                    <div class="quarter-status ${statusClass}">${status}</div>
+                    <div class="quarter-details">
+                        <div class="quarter-detail">
+                            <span class="quarter-detail-label">1099 Income:</span>
+                            <span class="positive">${formatCurrency(incomeByQuarter[quarter.name])}</span>
+                        </div>
+                        <div class="quarter-detail">
+                            <span class="quarter-detail-label">Tax Reserved:</span>
+                            <span>${formatCurrency(taxReserved)}</span>
+                        </div>
+                        <div class="quarter-detail">
+                            <span class="quarter-detail-label">Tax Paid:</span>
+                            <span class="${taxPaid > 0 ? 'positive' : ''}">${formatCurrency(taxPaid)}</span>
+                        </div>
+                        <div class="quarter-detail">
+                            <span class="quarter-detail-label">Balance Due:</span>
+                            <span class="${taxDue > 0 ? 'negative' : 'positive'}">${formatCurrency(Math.abs(taxDue))}</span>
+                        </div>
+                        <div class="quarter-detail">
+                            <span class="quarter-detail-label">Due Date:</span>
+                            <span>${quarter.dueDate.toLocaleDateString()}</span>
+                        </div>
+                    </div>
+                    ${taxDue > 0 ? `
+                        <button onclick="quickPayTax('${quarter.name}', ${taxDue})" style="width: 100%; margin-top: 12px;">
+                            Pay ${formatCurrency(taxDue)}
+                        </button>
+                    ` : ''}
+                `;
+                
+                quarterlyBreakdown.appendChild(card);
+            });
+            
+            // Update 1099 income breakdown table
+            const taxIncomeBreakdown = document.getElementById('taxIncomeBreakdown');
+            if (taxIncomeBreakdown) {
+                taxIncomeBreakdown.innerHTML = '';
+                
+                const incomeTypes = {
+                    'commission': { label: 'Commission (1099)', total: 0, tax: 0, count: 0 },
+                    'override': { label: 'Override (1099)', total: 0, tax: 0, count: 0 },
+                    'other-1099': { label: 'Other (1099)', total: 0, tax: 0, count: 0 }
+                };
+                
+                state.incomeHistory.forEach(entry => {
+                    if (entry && incomeTypes[entry.type]) {
+                        incomeTypes[entry.type].total += entry.amount || 0;
+                        incomeTypes[entry.type].tax += entry.tax || 0;
+                        incomeTypes[entry.type].count++;
+                    }
+                });
+                
+                Object.entries(incomeTypes).forEach(([type, data]) => {
+                    if (data.count > 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${data.label}</td>
+                            <td class="positive">${formatCurrency(data.total)}</td>
+                            <td>${formatCurrency(data.tax)}</td>
+                            <td>${data.count}</td>
+                        `;
+                        taxIncomeBreakdown.appendChild(row);
+                    }
+                });
+                
+                // Add total row
+                const totalRow = document.createElement('tr');
+                totalRow.style.fontWeight = '600';
+                totalRow.style.borderTop = '2px solid var(--border)';
+                const totals = Object.values(incomeTypes).reduce((acc, type) => ({
+                    total: acc.total + type.total,
+                    tax: acc.tax + type.tax,
+                    count: acc.count + type.count
+                }), { total: 0, tax: 0, count: 0 });
+                
+                totalRow.innerHTML = `
+                    <td>Total 1099 Income</td>
+                    <td class="positive">${formatCurrency(totals.total)}</td>
+                    <td>${formatCurrency(totals.tax)}</td>
+                    <td>${totals.count}</td>
+                `;
+                taxIncomeBreakdown.appendChild(totalRow);
+            }
+            
+            // Update tax payment history
+            const taxPaymentHistory = document.getElementById('taxPaymentHistory');
+            if (taxPaymentHistory) {
+                taxPaymentHistory.innerHTML = '';
+                
+                const taxPayments = state.paymentHistory.filter(p => p.type === 'tax');
+                taxPayments.forEach(payment => {
+                    const row = document.createElement('tr');
+                    const date = new Date(payment.date);
+                    
+                    row.innerHTML = `
+                        <td>${date.toLocaleDateString()}</td>
+                        <td>${payment.account}</td>
+                        <td class="positive">${formatCurrency(payment.amount)}</td>
+                        <td>${payment.notes || '-'}</td>
+                        <td>
+                            <button onclick="editPayment(${payment.id})" class="edit-btn">✏️</button>
+                            <button onclick="deletePayment(${payment.id})" class="delete-btn">🗑️</button>
+                        </td>
+                    `;
+                    taxPaymentHistory.appendChild(row);
+                });
+            }
+        }
+        
+        // Quick pay tax function
+        function quickPayTax(quarter, amount) {
+            document.getElementById('taxPaymentAmount').value = amount.toFixed(2);
+            document.getElementById('taxPaymentQuarter').value = quarter;
+            document.getElementById('taxPaymentNotes').value = `Quarterly estimated tax payment`;
+            
+            // Switch to manual payments tab
+            switchTab('payments');
+            
+            // Scroll to tax payment form
+            const taxCard = document.querySelector('.payment-card:last-child');
+            if (taxCard) {
+                taxCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                taxCard.style.animation = 'pulse 0.5s ease 2';
+            }
+        }
         window.onload = function() {
             // Wait for Chart.js to load
             let chartLoadAttempts = 0;
