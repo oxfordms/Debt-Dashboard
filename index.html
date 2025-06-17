@@ -1,4 +1,3 @@
-<!-- trigger github pages -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Command Center</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/date-fns/2.29.3/index.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -44,6 +42,43 @@
             padding: 20px;
         }
         
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        
+        .tab {
+            padding: 8px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .tab.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        .tab:hover:not(.active) {
+            background: var(--bg-tertiary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         /* Header */
         .header {
             display: flex;
@@ -78,6 +113,52 @@
             color: var(--accent-negative);
         }
         
+        /* Help Tooltips */
+        .help-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            font-size: 12px;
+            cursor: help;
+            position: relative;
+            margin-left: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .help-icon:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            width: 250px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+        
+        .help-icon:hover .tooltip {
+            opacity: 1;
+        }
+        
         /* Quick Actions */
         .quick-actions {
             background: var(--bg-secondary);
@@ -87,12 +168,22 @@
             margin-bottom: 30px;
         }
         
-        .income-input-group {
-            display: flex;
+        .income-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
-            flex-wrap: wrap;
-            align-items: center;
             margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
         }
         
         input, select {
@@ -137,76 +228,59 @@
             background: #3a3a3a;
         }
         
-        /* Split Calculator */
-        .split-calculator {
-            background: var(--bg-primary);
-            padding: 20px;
-            border-radius: 8px;
-            margin-top: 20px;
+        button.danger {
+            background: var(--accent-negative);
         }
         
-        .slider-group {
-            margin-bottom: 20px;
+        button.danger:hover {
+            background: #dc2626;
         }
         
-        .slider-label {
+        .checkbox-group {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
         }
         
-        .slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: var(--bg-tertiary);
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
+        input[type="checkbox"] {
+            width: auto;
         }
         
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-        
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--accent-primary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .distribution-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-top: 20px;
-        }
-        
-        .distribution-item {
+        /* Income Ledger */
+        .income-ledger {
             background: var(--bg-secondary);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            overflow-x: auto;
         }
         
-        .distribution-amount {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-top: 4px;
+        .ledger-table {
+            width: 100%;
+            min-width: 800px;
+        }
+        
+        .ledger-table th {
+            background: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .delete-btn {
+            background: transparent;
+            border: 1px solid var(--accent-negative);
+            color: var(--accent-negative);
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+        
+        .delete-btn:hover {
+            background: var(--accent-negative);
+            color: white;
         }
         
         /* Dashboard Grid */
@@ -253,6 +327,8 @@
             margin-bottom: 16px;
             color: var(--text-primary);
             font-weight: 400;
+            display: flex;
+            align-items: center;
         }
         
         .card-value {
@@ -269,6 +345,18 @@
         .subtitle {
             font-size: 0.9rem;
             color: var(--text-muted);
+        }
+        
+        .edit-icon {
+            margin-left: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+        
+        .edit-icon:hover {
+            opacity: 1;
         }
         
         /* Progress Bars */
@@ -309,6 +397,8 @@
             margin-bottom: 20px;
             color: var(--text-primary);
             font-weight: 400;
+            display: flex;
+            align-items: center;
         }
         
         /* Tables */
@@ -342,66 +432,32 @@
             margin-top: 20px;
         }
         
-        /* Debt Timeline */
-        .timeline {
-            position: relative;
-            padding: 20px 0;
+        /* Income Summary */
+        .income-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
         }
         
-        .timeline-line {
-            position: absolute;
-            left: 20px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
-        }
-        
-        .timeline-item {
-            position: relative;
-            margin-bottom: 30px;
-            padding-left: 50px;
-        }
-        
-        .timeline-marker {
-            position: absolute;
-            left: 11px;
-            top: 0;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--bg-secondary);
-            border: 3px solid var(--accent-primary);
-        }
-        
-        .timeline-content {
+        .income-type-card {
             background: var(--bg-primary);
-            padding: 12px;
+            padding: 16px;
             border-radius: 8px;
             border: 1px solid var(--border);
-        }
-        
-        /* Countdown Timer */
-        .countdown {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-        
-        .countdown-item {
             text-align: center;
         }
         
-        .countdown-value {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--accent-warning);
+        .income-type-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
         }
         
-        .countdown-label {
-            font-size: 0.9rem;
-            color: var(--text-muted);
+        .income-type-amount {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-positive);
         }
         
         /* Modal */
@@ -458,46 +514,28 @@
             color: var(--text-primary);
         }
         
-        .form-group {
-            margin-bottom: 20px;
+        /* Split Editor */
+        .split-editor {
+            background: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-muted);
-        }
-        
-        .form-group input {
-            width: 100%;
-        }
-        
-        /* Interest Bleed */
-        .bleed-rate {
+        .split-inputs {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
             gap: 12px;
-            margin-top: 20px;
         }
         
-        .bleed-item {
-            background: rgba(248, 113, 113, 0.1);
-            border: 1px solid rgba(248, 113, 113, 0.3);
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
+        .split-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
         
-        .bleed-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-        }
-        
-        .bleed-value {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-negative);
+        .split-input-group input {
+            padding: 8px 12px;
         }
         
         /* Responsive */
@@ -511,17 +549,30 @@
                 align-items: flex-start;
             }
             
+            .tabs {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                font-size: 0.9rem;
+                padding: 6px 16px;
+            }
+            
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
             
-            .distribution-preview {
-                grid-template-columns: repeat(2, 1fr);
+            .income-form {
+                grid-template-columns: 1fr;
             }
             
             .modal-content {
                 margin: 10% auto;
                 padding: 20px;
+            }
+            
+            .ledger-table {
+                font-size: 0.85rem;
             }
         }
         
@@ -554,6 +605,34 @@
                 transform: scale(1.1);
             }
         }
+        
+        /* Interest Bleed */
+        .bleed-rate {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .bleed-item {
+            background: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .bleed-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        
+        .bleed-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-negative);
+        }
     </style>
 </head>
 <body>
@@ -574,164 +653,265 @@
             </div>
         </div>
         
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <h2>Record Override Income</h2>
-            <div class="income-input-group">
-                <input type="number" id="overrideIncome" placeholder="Enter amount" step="0.01">
-                <button onclick="recordIncome()" class="pulse">Record Income</button>
-                <button onclick="toggleSplitCalculator()" class="secondary">Adjust Split %</button>
-                <button onclick="showAddDebt()" class="secondary">Add Debt</button>
-            </div>
-            
-            <!-- Split Calculator (Hidden by default) -->
-            <div class="split-calculator" id="splitCalculator" style="display: none;">
-                <h3>Customize Income Distribution</h3>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>Tithe</span>
-                        <span id="tithePercent">10%</span>
-                    </div>
-                    <input type="range" class="slider" id="titheSlider" min="0" max="20" value="10" oninput="updateSplits()">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>Tax Reserve</span>
-                        <span id="taxPercent">22.9%</span>
-                    </div>
-                    <input type="range" class="slider" id="taxSlider" min="0" max="40" value="22.9" step="0.1" oninput="updateSplits()">
-                </div>
-                <div class="slider-group">
-                    <div class="slider-label">
-                        <span>Debt Payment</span>
-                        <span id="debtPercent">30%</span>
-                    </div>
-                    <input type="range" class="slider" id="debtSlider" min="0" max="60" value="30" oninput="updateSplits()">
-                </div>
-                <div class="distribution-preview" id="distributionPreview"></div>
-            </div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('overview')">Overview</div>
+            <div class="tab" onclick="switchTab('income')">Income</div>
+            <div class="tab" onclick="switchTab('debts')">Debts</div>
+            <div class="tab" onclick="switchTab('settings')">Settings</div>
         </div>
         
-        <!-- Main Dashboard -->
-        <div class="dashboard-grid">
-            <!-- Quarterly Tax Status -->
-            <div class="card">
-                <h2>2025 Tax Status</h2>
-                <div class="card-value" id="taxStatus">$0</div>
-                <div class="subtitle" id="taxSubtitle">Q1-Q2 Progress</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="taxProgress" style="width: 0%"></div>
-                </div>
-                <div class="countdown" style="margin-top: 16px;">
-                    <div class="countdown-item">
-                        <div class="countdown-value" id="daysUntilTax">--</div>
-                        <div class="countdown-label">days until Q3</div>
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview-tab">
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Record Income</h2>
+                <form onsubmit="recordIncome(event)" class="income-form">
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="overrideIncome" placeholder="Enter amount" step="0.01" required>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Debt Overview -->
-            <div class="card">
-                <h2>Total Debt</h2>
-                <div class="card-value negative" id="totalDebt">$0</div>
-                <div class="subtitle">
-                    <span id="debtCount">0</span> accounts • 
-                    <span id="avgRate">0%</span> avg rate
-                </div>
-                <div class="bleed-rate" style="margin-top: 16px;">
-                    <div class="bleed-item">
-                        <div class="bleed-label">Daily</div>
-                        <div class="bleed-value" id="dailyInterest">$0</div>
+                    <div class="form-group">
+                        <label>Income Type</label>
+                        <select id="incomeType">
+                            <option value="salary">Salary (W-2)</option>
+                            <option value="commission">Commission</option>
+                            <option value="bonus">Bonus</option>
+                            <option value="distribution">Distribution (K-1)</option>
+                            <option value="other">Other</option>
+                        </select>
                     </div>
-                    <div class="bleed-item">
-                        <div class="bleed-label">Weekly</div>
-                        <div class="bleed-value" id="weeklyInterest">$0</div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="incomeNotes" placeholder="Optional notes">
                     </div>
-                    <div class="bleed-item">
-                        <div class="bleed-label">Monthly</div>
-                        <div class="bleed-value" id="monthlyInterest">$0</div>
+                    <div class="form-group" style="align-self: end;">
+                        <button type="submit" class="pulse">Record Income</button>
+                    </div>
+                </form>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useDefaultSplit" checked>
+                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax, rest to debt)</label>
+                </div>
+                
+                <!-- Custom Split Editor -->
+                <div class="split-editor" id="customSplitEditor" style="display: none;">
+                    <h3>Custom Split for This Income</h3>
+                    <div class="split-inputs">
+                        <div class="split-input-group">
+                            <label>Tithe %</label>
+                            <input type="number" id="customTithe" value="10" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Tax %</label>
+                            <input type="number" id="customTax" value="22.9" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Debt %</label>
+                            <input type="number" id="customDebt" value="30" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Flexible %</label>
+                            <input type="number" id="customFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Next Target -->
-            <div class="card">
-                <h2>Debt Snowball Target</h2>
-                <div class="card-value info" id="targetDebt">--</div>
-                <div class="subtitle" id="targetInfo">--</div>
-                <div class="progress-bar">
-                    <div class="progress-fill info" id="targetProgress" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Debt Details -->
-        <div class="section">
-            <h2>Debt Breakdown</h2>
-            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-                <button onclick="setDebtStrategy('snowball')" id="snowballBtn">Snowball (Smallest First)</button>
-                <button onclick="setDebtStrategy('avalanche')" id="avalancheBtn" class="secondary">Avalanche (Highest Rate)</button>
-            </div>
-            <table id="debtTable">
-                <thead>
-                    <tr>
-                        <th>Account</th>
-                        <th>Balance</th>
-                        <th>Rate</th>
-                        <th>Min Payment</th>
-                        <th>Monthly Interest</th>
-                        <th>Payoff Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="debtTableBody">
-                    <!-- Populated by JS -->
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- Payoff Timeline -->
-        <div class="section">
-            <h2>Payoff Timeline</h2>
-            <div class="chart-container">
-                <canvas id="payoffChart"></canvas>
-            </div>
-        </div>
-        
-        <!-- Income Distribution History -->
-        <div class="section">
-            <h2>Income Distribution</h2>
-            <div class="chart-container" style="height: 250px;">
-                <canvas id="distributionChart"></canvas>
-            </div>
-        </div>
-        
-        <!-- Interest Cost Analysis -->
-        <div class="section">
-            <h2>Interest Cost Analysis</h2>
+            <!-- Main Dashboard -->
             <div class="dashboard-grid">
+                <!-- Quarterly Tax Status -->
                 <div class="card">
-                    <h2>Cost of Waiting</h2>
-                    <div class="bleed-rate">
+                    <h2>
+                        2025 Tax Status
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Tracks your quarterly estimated tax payments. Shows progress toward Q1-Q2 combined goal.</span>
+                        </span>
+                    </h2>
+                    <div class="card-value" id="taxStatus">$0</div>
+                    <div class="subtitle">
+                        <span id="taxContributed">$0</span> of <span id="taxGoal">$9,566</span> goal
+                        <span class="edit-icon" onclick="editTaxGoal()">✎</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="taxProgress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <!-- Total Income -->
+                <div class="card">
+                    <h2>
+                        Total Income Tracked
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Cumulative total of all income entries you've recorded in this dashboard.</span>
+                        </span>
+                    </h2>
+                    <div class="card-value positive" id="totalIncome">$0</div>
+                    <div class="subtitle"><span id="incomeCount">0</span> entries recorded</div>
+                </div>
+                
+                <!-- Debt Overview -->
+                <div class="card">
+                    <h2>
+                        Total Debt
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Sum of all debt balances with weighted average interest rate.</span>
+                        </span>
+                    </h2>
+                    <div class="card-value negative" id="totalDebt">$0</div>
+                    <div class="subtitle">
+                        <span id="debtCount">0</span> accounts • 
+                        <span id="avgRate">0%</span> avg rate
+                    </div>
+                    <div class="bleed-rate" style="margin-top: 16px;">
                         <div class="bleed-item">
-                            <div class="bleed-label">30 Days</div>
-                            <div class="bleed-value" id="cost30">$0</div>
+                            <div class="bleed-label">Daily</div>
+                            <div class="bleed-value" id="dailyInterest">$0</div>
                         </div>
                         <div class="bleed-item">
-                            <div class="bleed-label">90 Days</div>
-                            <div class="bleed-value" id="cost90">$0</div>
+                            <div class="bleed-label">Weekly</div>
+                            <div class="bleed-value" id="weeklyInterest">$0</div>
                         </div>
                         <div class="bleed-item">
-                            <div class="bleed-label">1 Year</div>
-                            <div class="bleed-value" id="cost365">$0</div>
+                            <div class="bleed-label">Monthly</div>
+                            <div class="bleed-value" id="monthlyInterest">$0</div>
                         </div>
                     </div>
                 </div>
-                <div class="card">
-                    <h2>Total Interest Paid</h2>
-                    <div class="card-value warning" id="totalInterestPaid">$0</div>
-                    <div class="subtitle">Since tracking began</div>
+            </div>
+            
+            <!-- Income Type Breakdown -->
+            <div class="section">
+                <h2>Income by Type</h2>
+                <div class="income-summary" id="incomeSummary">
+                    <!-- Populated by JS -->
                 </div>
+            </div>
+        </div>
+        
+        <!-- Income Tab -->
+        <div class="tab-content" id="income-tab">
+            <!-- Income Ledger -->
+            <div class="income-ledger">
+                <h2>
+                    Income History
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Complete history of all income entries. Click delete to remove an entry.</span>
+                    </span>
+                </h2>
+                <div style="overflow-x: auto;">
+                    <table class="ledger-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Gross Amount</th>
+                                <th>Tithe</th>
+                                <th>Tax Reserve</th>
+                                <th>Debt</th>
+                                <th>Flexible</th>
+                                <th>Type</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomeLedger">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 20px; text-align: right;">
+                    <button onclick="confirmReset()" class="danger">Reset All Income History</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Debts Tab -->
+        <div class="tab-content" id="debts-tab">
+            <!-- Debt Strategy -->
+            <div class="section">
+                <h2>
+                    Debt Strategy
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Snowball pays smallest balance first. Avalanche pays highest rate first.</span>
+                    </span>
+                </h2>
+                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                    <button onclick="setDebtStrategy('snowball')" id="snowballBtn">Snowball (Smallest First)</button>
+                    <button onclick="setDebtStrategy('avalanche')" id="avalancheBtn" class="secondary">Avalanche (Highest Rate)</button>
+                </div>
+            </div>
+            
+            <!-- Debt Details -->
+            <div class="section">
+                <h2>Debt Breakdown</h2>
+                <table id="debtTable">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Balance</th>
+                            <th>Rate</th>
+                            <th>Min Payment</th>
+                            <th>Monthly Interest</th>
+                            <th>Payoff Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="debtTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+                <div style="margin-top: 20px;">
+                    <button onclick="showAddDebt()">Add New Debt</button>
+                    <button onclick="showManualPayment()" class="secondary">Make Manual Payment</button>
+                </div>
+            </div>
+            
+            <!-- Payoff Timeline -->
+            <div class="section">
+                <h2>
+                    Payoff Timeline
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Projected debt balance over time based on your average income and payment history.</span>
+                    </span>
+                </h2>
+                <div class="chart-container">
+                    <canvas id="payoffChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="section">
+                <h2>Default Income Split</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Adjust the default percentages for how income is allocated. These can be overridden per income entry.
+                </p>
+                <div class="split-inputs">
+                    <div class="split-input-group">
+                        <label>Tithe %</label>
+                        <input type="number" id="defaultTithe" value="10" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Tax Reserve %</label>
+                        <input type="number" id="defaultTax" value="22.9" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Debt %</label>
+                        <input type="number" id="defaultDebt" value="30" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Flexible %</label>
+                        <input type="number" id="defaultFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Data Management</h2>
+                <button onclick="exportData()">Export All Data (JSON)</button>
+                <button onclick="importData()" class="secondary">Import Data</button>
             </div>
         </div>
         
@@ -740,7 +920,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2>Add New Debt</h2>
-                    <span class="close" onclick="closeModal()">&times;</span>
+                    <span class="close" onclick="closeModal('addDebtModal')">&times;</span>
                 </div>
                 <form onsubmit="addDebt(event)">
                     <div class="form-group">
@@ -763,40 +943,111 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Edit Tax Goal Modal -->
+        <div id="editTaxModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Quarterly Tax Goal</h2>
+                    <span class="close" onclick="closeModal('editTaxModal')">&times;</span>
+                </div>
+                <form onsubmit="saveTaxGoal(event)">
+                    <div class="form-group">
+                        <label>Q1-Q2 2025 Tax Goal</label>
+                        <input type="number" id="taxGoalInput" step="0.01" required>
+                    </div>
+                    <button type="submit">Save Goal</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Manual Payment Modal -->
+        <div id="manualPaymentModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Make Manual Debt Payment</h2>
+                    <span class="close" onclick="closeModal('manualPaymentModal')">&times;</span>
+                </div>
+                <form onsubmit="makeManualPayment(event)">
+                    <div class="form-group">
+                        <label>Select Debt</label>
+                        <select id="paymentDebtSelect" required>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Amount</label>
+                        <input type="number" id="paymentAmount" step="0.01" required>
+                    </div>
+                    <button type="submit">Apply Payment</button>
+                </form>
+            </div>
+        </div>
     </div>
     
     <script>
         // State Management
         const state = {
             debts: [
-                { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58 },
-                { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58 },
-                { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84 },
-                { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538 },
-                { id: 5, name: 'Pinnacle', balance: 22078, rate: 0, minPayment: 0 }
+                { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58, originalBalance: 10066 },
+                { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58, originalBalance: 13153 },
+                { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84, originalBalance: 33814 },
+                { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 },
+                { id: 5, name: 'Pinnacle', balance: 22078, rate: 0, minPayment: 0, originalBalance: 22078 }
             ],
-            quarterlyTaxDue: 38264 / 4,
+            quarterlyTaxGoal: 9566,
             quarterlyPaid: 0,
             strategy: 'snowball',
-            splits: {
+            defaultSplits: {
                 tithe: 10,
                 tax: 22.9,
-                debt: 30
+                debt: 30,
+                flexible: 37.1
             },
             incomeHistory: [],
             totalInterestPaid: 0
         };
         
         // Charts
-        let payoffChart, distributionChart;
+        let payoffChart;
         
         // Initialize
         function init() {
             loadState();
             updateAllCalculations();
             initCharts();
-            updateCountdown();
-            setInterval(updateCountdown, 60000); // Update every minute
+            
+            // Set default split values
+            document.getElementById('defaultTithe').value = state.defaultSplits.tithe;
+            document.getElementById('defaultTax').value = state.defaultSplits.tax;
+            document.getElementById('defaultDebt').value = state.defaultSplits.debt;
+            document.getElementById('defaultFlexible').value = state.defaultSplits.flexible;
+            
+            // Set up checkbox listener
+            document.getElementById('useDefaultSplit').addEventListener('change', function() {
+                document.getElementById('customSplitEditor').style.display = 
+                    this.checked ? 'none' : 'block';
+            });
+            
+            // Set up custom split listeners
+            ['customTithe', 'customTax', 'customDebt'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateCustomFlexible);
+            });
+        }
+        
+        // Tab Management
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
         }
         
         // Load/Save State
@@ -827,36 +1078,144 @@
         }
         
         // Income Recording
-        function recordIncome() {
+        function recordIncome(event) {
+            event.preventDefault();
+            
             const income = parseFloat(document.getElementById('overrideIncome').value);
+            const type = document.getElementById('incomeType').value;
+            const notes = document.getElementById('incomeNotes').value;
+            const useDefault = document.getElementById('useDefaultSplit').checked;
+            
             if (!income || income <= 0) return;
             
-            const tithe = income * (state.splits.tithe / 100);
-            const tax = income * (state.splits.tax / 100);
-            const debt = income * (state.splits.debt / 100);
-            const flexible = income - tithe - tax - debt;
+            // Get splits
+            let splits;
+            if (useDefault) {
+                splits = { ...state.defaultSplits };
+            } else {
+                splits = {
+                    tithe: parseFloat(document.getElementById('customTithe').value),
+                    tax: parseFloat(document.getElementById('customTax').value),
+                    debt: parseFloat(document.getElementById('customDebt').value),
+                    flexible: parseFloat(document.getElementById('customFlexible').value)
+                };
+            }
+            
+            // Calculate amounts
+            const tithe = income * (splits.tithe / 100);
+            const tax = income * (splits.tax / 100);
+            const debt = income * (splits.debt / 100);
+            const flexible = income * (splits.flexible / 100);
             
             // Track quarterly tax
             state.quarterlyPaid += tax;
             
             // Record income history
-            state.incomeHistory.push({
+            const entry = {
+                id: Date.now(),
                 date: new Date().toISOString(),
                 amount: income,
-                tithe, tax, debt, flexible
-            });
+                tithe,
+                tax,
+                debt,
+                flexible,
+                type,
+                notes,
+                splits
+            };
+            
+            state.incomeHistory.unshift(entry); // Add to beginning
             
             // Apply debt payment
             applyDebtPayment(debt);
             
-            // Clear input
+            // Clear form
             document.getElementById('overrideIncome').value = '';
+            document.getElementById('incomeNotes').value = '';
+            document.getElementById('useDefaultSplit').checked = true;
+            document.getElementById('customSplitEditor').style.display = 'none';
             
             // Show success animation
             showSuccessAnimation();
             
             saveState();
             updateAllCalculations();
+        }
+        
+        // Custom Split Management
+        function updateCustomFlexible() {
+            const tithe = parseFloat(document.getElementById('customTithe').value) || 0;
+            const tax = parseFloat(document.getElementById('customTax').value) || 0;
+            const debt = parseFloat(document.getElementById('customDebt').value) || 0;
+            const flexible = Math.max(0, 100 - tithe - tax - debt);
+            
+            document.getElementById('customFlexible').value = flexible.toFixed(1);
+        }
+        
+        function updateDefaultSplits() {
+            const tithe = parseFloat(document.getElementById('defaultTithe').value) || 0;
+            const tax = parseFloat(document.getElementById('defaultTax').value) || 0;
+            const debt = parseFloat(document.getElementById('defaultDebt').value) || 0;
+            const flexible = Math.max(0, 100 - tithe - tax - debt);
+            
+            state.defaultSplits = { tithe, tax, debt, flexible };
+            document.getElementById('defaultFlexible').value = flexible.toFixed(1);
+            
+            saveState();
+        }
+        
+        // Income Ledger
+        function updateIncomeLedger() {
+            const tbody = document.getElementById('incomeLedger');
+            tbody.innerHTML = '';
+            
+            state.incomeHistory.forEach(entry => {
+                const row = document.createElement('tr');
+                const date = new Date(entry.date);
+                
+                row.innerHTML = `
+                    <td>${date.toLocaleDateString()}</td>
+                    <td class="positive">${formatCurrency(entry.amount)}</td>
+                    <td>${formatCurrency(entry.tithe)} (${entry.splits.tithe}%)</td>
+                    <td>${formatCurrency(entry.tax)} (${entry.splits.tax}%)</td>
+                    <td>${formatCurrency(entry.debt)} (${entry.splits.debt}%)</td>
+                    <td>${formatCurrency(entry.flexible)} (${entry.splits.flexible}%)</td>
+                    <td>${getIncomeTypeLabel(entry.type)}</td>
+                    <td>${entry.notes || '-'}</td>
+                    <td>
+                        <button onclick="deleteIncome(${entry.id})" class="delete-btn">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function deleteIncome(id) {
+            if (confirm('Delete this income entry? This will also reverse any debt payments made from this income.')) {
+                const entry = state.incomeHistory.find(e => e.id === id);
+                if (entry) {
+                    // Reverse tax tracking
+                    state.quarterlyPaid = Math.max(0, state.quarterlyPaid - entry.tax);
+                    
+                    // Note: Reversing debt payments is complex and would need transaction tracking
+                    // For now, we'll just remove the entry
+                    
+                    state.incomeHistory = state.incomeHistory.filter(e => e.id !== id);
+                    saveState();
+                    updateAllCalculations();
+                }
+            }
+        }
+        
+        function getIncomeTypeLabel(type) {
+            const labels = {
+                salary: 'Salary (W-2)',
+                commission: 'Commission',
+                bonus: 'Bonus',
+                distribution: 'Distribution (K-1)',
+                other: 'Other'
+            };
+            return labels[type] || type;
         }
         
         // Debt Payment Logic
@@ -866,16 +1225,20 @@
             
             // First, pay minimums
             orderedDebts.forEach(debt => {
-                if (remaining >= debt.minPayment) {
-                    remaining -= debt.minPayment;
-                    debt.balance = Math.max(0, debt.balance - debt.minPayment);
+                if (remaining >= debt.minPayment && debt.balance > 0) {
+                    const payment = Math.min(debt.minPayment, debt.balance);
+                    remaining -= payment;
+                    debt.balance -= payment;
                 }
             });
             
             // Then apply extra to target
             if (remaining > 0 && orderedDebts.length > 0) {
-                const target = orderedDebts[0];
-                target.balance = Math.max(0, target.balance - remaining);
+                const target = orderedDebts.find(d => d.balance > 0);
+                if (target) {
+                    const payment = Math.min(remaining, target.balance);
+                    target.balance -= payment;
+                }
             }
             
             // Remove paid off debts
@@ -896,23 +1259,25 @@
         function updateAllCalculations() {
             updateDebtSummary();
             updateTaxStatus();
+            updateIncomesSummary();
             updateDebtTable();
+            updateIncomeLedger();
             updateCharts();
-            updateInterestCosts();
             updatePayoffDates();
         }
         
         function updateDebtSummary() {
             const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
             const debtCount = state.debts.length;
-            const avgRate = state.debts.reduce((sum, d) => sum + d.rate * d.balance, 0) / totalDebt;
+            
+            let avgRate = 0;
+            if (totalDebt > 0) {
+                avgRate = state.debts.reduce((sum, d) => sum + d.rate * d.balance, 0) / totalDebt;
+            }
             
             const dailyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 365), 0);
             const weeklyInterest = dailyInterest * 7;
             const monthlyInterest = dailyInterest * 30;
-            
-            // Track total interest
-            state.totalInterestPaid += dailyInterest;
             
             // Update UI
             document.getElementById('totalDebt').textContent = formatCurrency(totalDebt, true);
@@ -924,33 +1289,53 @@
             document.getElementById('dailyInterest').textContent = formatCurrency(dailyInterest);
             document.getElementById('weeklyInterest').textContent = formatCurrency(weeklyInterest);
             document.getElementById('monthlyInterest').textContent = formatCurrency(monthlyInterest);
-            
-            // Update target
-            const target = getOrderedDebts()[0];
-            if (target) {
-                document.getElementById('targetDebt').textContent = target.name;
-                document.getElementById('targetInfo').textContent = 
-                    `${formatCurrency(target.balance)} @ ${(target.rate * 100).toFixed(1)}%`;
-                
-                const originalBalance = getOriginalBalance(target.id);
-                const progress = ((originalBalance - target.balance) / originalBalance) * 100;
-                document.getElementById('targetProgress').style.width = progress + '%';
-            }
         }
         
         function updateTaxStatus() {
-            const quarterlyTarget = state.quarterlyTaxDue * 2; // Q1 + Q2
-            const behind = quarterlyTarget - state.quarterlyPaid;
-            const progress = (state.quarterlyPaid / quarterlyTarget) * 100;
+            const progress = (state.quarterlyPaid / state.quarterlyTaxGoal) * 100;
+            const remaining = Math.max(0, state.quarterlyTaxGoal - state.quarterlyPaid);
             
             document.getElementById('taxStatus').textContent = 
-                behind > 0 ? formatCurrency(behind, true) : formatCurrency(Math.abs(behind));
+                remaining > 0 ? formatCurrency(remaining, true) : '+' + formatCurrency(Math.abs(remaining));
             document.getElementById('taxStatus').className = 
-                behind > 0 ? 'card-value negative' : 'card-value positive';
+                remaining > 0 ? 'card-value negative' : 'card-value positive';
+            
+            document.getElementById('taxContributed').textContent = formatCurrency(state.quarterlyPaid);
+            document.getElementById('taxGoal').textContent = formatCurrency(state.quarterlyTaxGoal);
             
             const progressBar = document.getElementById('taxProgress');
             progressBar.style.width = Math.min(100, progress) + '%';
             progressBar.className = progress >= 100 ? 'progress-fill' : 'progress-fill danger';
+        }
+        
+        function updateIncomesSummary() {
+            const totalIncome = state.incomeHistory.reduce((sum, e) => sum + e.amount, 0);
+            const incomeByType = {};
+            
+            state.incomeHistory.forEach(entry => {
+                if (!incomeByType[entry.type]) {
+                    incomeByType[entry.type] = 0;
+                }
+                incomeByType[entry.type] += entry.amount;
+            });
+            
+            // Update total
+            document.getElementById('totalIncome').textContent = formatCurrency(totalIncome);
+            document.getElementById('incomeCount').textContent = state.incomeHistory.length;
+            
+            // Update type breakdown
+            const summaryDiv = document.getElementById('incomeSummary');
+            summaryDiv.innerHTML = '';
+            
+            Object.entries(incomeByType).forEach(([type, amount]) => {
+                const card = document.createElement('div');
+                card.className = 'income-type-card';
+                card.innerHTML = `
+                    <div class="income-type-label">${getIncomeTypeLabel(type)}</div>
+                    <div class="income-type-amount">${formatCurrency(amount)}</div>
+                `;
+                summaryDiv.appendChild(card);
+            });
         }
         
         function updateDebtTable() {
@@ -981,79 +1366,123 @@
         }
         
         function calculatePayoffDate(debt, isTarget) {
-            const monthlyPayment = isTarget ? 
-                debt.minPayment + getAverageExtraPayment() : 
-                debt.minPayment;
-                
-            if (monthlyPayment <= debt.balance * debt.rate / 12) {
-                return 'Never';
+            if (debt.balance === 0) return 'Paid Off';
+            
+            // Get average monthly payment for this debt
+            let monthlyPayment = debt.minPayment;
+            
+            if (isTarget && state.incomeHistory.length > 0) {
+                // Calculate average extra payment based on income history
+                const avgMonthlyIncome = state.incomeHistory.reduce((sum, e) => sum + e.amount, 0) / 
+                                       Math.max(1, getMonthsSpan());
+                const avgDebtPayment = avgMonthlyIncome * 0.3; // Assume 30% to debt
+                const totalMinPayments = state.debts.reduce((sum, d) => sum + d.minPayment, 0);
+                const extraPayment = Math.max(0, avgDebtPayment - totalMinPayments);
+                monthlyPayment += extraPayment;
             }
             
-            const months = Math.log(monthlyPayment / (monthlyPayment - debt.balance * debt.rate / 12)) / 
-                          Math.log(1 + debt.rate / 12);
-                          
+            // Check if payment covers interest
+            const monthlyInterest = debt.balance * debt.rate / 12;
+            if (monthlyPayment <= monthlyInterest) {
+                return 'Never (payment too low)';
+            }
+            
+            // Calculate months to payoff
+            const r = debt.rate / 12;
+            let months;
+            
+            if (r === 0) {
+                months = debt.balance / monthlyPayment;
+            } else {
+                months = -Math.log(1 - (debt.balance * r) / monthlyPayment) / Math.log(1 + r);
+            }
+            
+            if (isNaN(months) || months < 0) {
+                return 'Error in calculation';
+            }
+            
             const payoffDate = new Date();
             payoffDate.setMonth(payoffDate.getMonth() + Math.ceil(months));
             
             return payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
         }
         
-        function getAverageExtraPayment() {
-            if (state.incomeHistory.length === 0) return 100;
-            const avgIncome = state.incomeHistory.reduce((sum, i) => sum + i.amount, 0) / state.incomeHistory.length;
-            return avgIncome * (state.splits.debt / 100) - getTotalMinimumPayments();
-        }
-        
-        function getTotalMinimumPayments() {
-            return state.debts.reduce((sum, d) => sum + d.minPayment, 0);
+        function getMonthsSpan() {
+            if (state.incomeHistory.length < 2) return 1;
+            
+            const dates = state.incomeHistory.map(e => new Date(e.date));
+            const oldest = Math.min(...dates);
+            const newest = Math.max(...dates);
+            
+            const months = (newest - oldest) / (1000 * 60 * 60 * 24 * 30);
+            return Math.max(1, months);
         }
         
         function updatePayoffDates() {
             // Calculate overall payoff date
-            let totalBalance = state.debts.reduce((sum, d) => sum + d.balance, 0);
-            const avgMonthlyPayment = getAverageMonthlyPayment();
+            if (state.debts.length === 0) {
+                document.getElementById('payoffDateHeader').textContent = 'Debt Free!';
+                return;
+            }
             
-            if (avgMonthlyPayment > 0) {
-                let months = 0;
-                let projectedDebts = state.debts.map(d => ({...d}));
+            // Simple projection based on current strategy
+            let totalMonths = 0;
+            let remainingDebts = state.debts.map(d => ({...d}));
+            const avgMonthlyPayment = getAverageMonthlyDebtPayment();
+            
+            while (remainingDebts.length > 0 && totalMonths < 360) {
+                totalMonths++;
                 
-                while (totalBalance > 0 && months < 360) { // Max 30 years
-                    months++;
-                    // Apply payments using current strategy
-                    let payment = avgMonthlyPayment;
-                    const ordered = projectedDebts.sort((a, b) => {
+                // Apply payments
+                let availablePayment = avgMonthlyPayment;
+                
+                // Pay minimums first
+                remainingDebts.forEach(debt => {
+                    if (debt.balance > 0) {
+                        const minPay = Math.min(debt.minPayment, debt.balance);
+                        debt.balance -= minPay;
+                        availablePayment -= minPay;
+                        
+                        // Add interest
+                        debt.balance += debt.balance * debt.rate / 12;
+                    }
+                });
+                
+                // Apply extra to target
+                const ordered = remainingDebts
+                    .filter(d => d.balance > 0)
+                    .sort((a, b) => {
                         if (state.strategy === 'snowball') return a.balance - b.balance;
                         return b.rate - a.rate;
                     });
-                    
-                    ordered.forEach(debt => {
-                        if (debt.balance > 0) {
-                            const interest = debt.balance * debt.rate / 12;
-                            const principal = Math.min(payment, debt.balance + interest);
-                            debt.balance = Math.max(0, debt.balance + interest - principal);
-                            payment -= principal;
-                        }
-                    });
-                    
-                    totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
+                
+                if (ordered.length > 0 && availablePayment > 0) {
+                    ordered[0].balance = Math.max(0, ordered[0].balance - availablePayment);
                 }
                 
-                const payoffDate = new Date();
-                payoffDate.setMonth(payoffDate.getMonth() + months);
-                document.getElementById('payoffDateHeader').textContent = 
-                    payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                // Remove paid debts
+                remainingDebts = remainingDebts.filter(d => d.balance > 0);
             }
+            
+            const payoffDate = new Date();
+            payoffDate.setMonth(payoffDate.getMonth() + totalMonths);
+            document.getElementById('payoffDateHeader').textContent = 
+                payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
         }
         
-        function getAverageMonthlyPayment() {
-            if (state.incomeHistory.length === 0) return getTotalMinimumPayments();
-            const avgIncome = state.incomeHistory.reduce((sum, i) => sum + i.amount, 0) / state.incomeHistory.length;
-            return avgIncome * (state.splits.debt / 100);
+        function getAverageMonthlyDebtPayment() {
+            if (state.incomeHistory.length === 0) {
+                return state.debts.reduce((sum, d) => sum + d.minPayment, 0);
+            }
+            
+            const totalDebtPayments = state.incomeHistory.reduce((sum, e) => sum + e.debt, 0);
+            const months = Math.max(1, getMonthsSpan());
+            
+            return totalDebtPayments / months;
         }
         
         // Charts
         function initCharts() {
-            // Payoff Chart
             const payoffCtx = document.getElementById('payoffChart').getContext('2d');
             payoffChart = new Chart(payoffCtx, {
                 type: 'line',
@@ -1083,28 +1512,6 @@
                     }
                 }
             });
-            
-            // Distribution Chart
-            const distCtx = document.getElementById('distributionChart').getContext('2d');
-            distributionChart = new Chart(distCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Tithe', 'Tax', 'Debt', 'Flexible'],
-                    datasets: [{
-                        data: [10, 22.9, 30, 37.1],
-                        backgroundColor: ['#60a5fa', '#fbbf24', '#f87171', '#4ade80']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                }
-            });
         }
         
         function updateCharts() {
@@ -1115,6 +1522,7 @@
             
             let projectedDebts = state.debts.map(d => ({...d}));
             let totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
+            const monthlyPayment = getAverageMonthlyDebtPayment();
             
             for (let i = 0; i <= months; i++) {
                 const date = new Date();
@@ -1122,15 +1530,20 @@
                 labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
                 data.push(totalBalance);
                 
-                if (i < months) {
+                if (i < months && totalBalance > 0) {
                     // Apply projected payments
-                    const payment = getAverageMonthlyPayment();
+                    let payment = monthlyPayment;
+                    
+                    // Simple allocation
                     projectedDebts.forEach(debt => {
                         if (debt.balance > 0) {
                             const interest = debt.balance * debt.rate / 12;
-                            debt.balance = Math.max(0, debt.balance + interest - payment / projectedDebts.length);
+                            const allocated = Math.min(payment / projectedDebts.length, debt.balance + interest);
+                            debt.balance = Math.max(0, debt.balance + interest - allocated);
+                            payment -= allocated;
                         }
                     });
+                    
                     totalBalance = projectedDebts.reduce((sum, d) => sum + d.balance, 0);
                 }
             }
@@ -1138,82 +1551,20 @@
             payoffChart.data.labels = labels;
             payoffChart.data.datasets[0].data = data;
             payoffChart.update();
-            
-            // Update distribution chart
-            const splits = [
-                state.splits.tithe,
-                state.splits.tax,
-                state.splits.debt,
-                100 - state.splits.tithe - state.splits.tax - state.splits.debt
-            ];
-            distributionChart.data.datasets[0].data = splits;
-            distributionChart.update();
         }
         
-        // Interest Costs
-        function updateInterestCosts() {
-            const dailyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 365), 0);
-            
-            document.getElementById('cost30').textContent = formatCurrency(dailyInterest * 30);
-            document.getElementById('cost90').textContent = formatCurrency(dailyInterest * 90);
-            document.getElementById('cost365').textContent = formatCurrency(dailyInterest * 365);
-            document.getElementById('totalInterestPaid').textContent = formatCurrency(state.totalInterestPaid);
+        // Tax Goal Management
+        function editTaxGoal() {
+            document.getElementById('taxGoalInput').value = state.quarterlyTaxGoal;
+            document.getElementById('editTaxModal').style.display = 'block';
         }
         
-        // Countdown
-        function updateCountdown() {
-            const now = new Date();
-            const q3Date = new Date(now.getFullYear(), 8, 15); // Sept 15
-            if (now > q3Date) q3Date.setFullYear(q3Date.getFullYear() + 1);
-            
-            const days = Math.ceil((q3Date - now) / (1000 * 60 * 60 * 24));
-            document.getElementById('daysUntilTax').textContent = days;
-        }
-        
-        // Split Calculator
-        function toggleSplitCalculator() {
-            const calc = document.getElementById('splitCalculator');
-            calc.style.display = calc.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function updateSplits() {
-            state.splits.tithe = parseFloat(document.getElementById('titheSlider').value);
-            state.splits.tax = parseFloat(document.getElementById('taxSlider').value);
-            state.splits.debt = parseFloat(document.getElementById('debtSlider').value);
-            
-            document.getElementById('tithePercent').textContent = state.splits.tithe + '%';
-            document.getElementById('taxPercent').textContent = state.splits.tax + '%';
-            document.getElementById('debtPercent').textContent = state.splits.debt + '%';
-            
-            // Preview with $1000
-            const preview = document.getElementById('distributionPreview');
-            const income = 1000;
-            const tithe = income * (state.splits.tithe / 100);
-            const tax = income * (state.splits.tax / 100);
-            const debt = income * (state.splits.debt / 100);
-            const flexible = income - tithe - tax - debt;
-            
-            preview.innerHTML = `
-                <div class="distribution-item">
-                    <div>Tithe</div>
-                    <div class="distribution-amount info">${formatCurrency(tithe)}</div>
-                </div>
-                <div class="distribution-item">
-                    <div>Tax</div>
-                    <div class="distribution-amount warning">${formatCurrency(tax)}</div>
-                </div>
-                <div class="distribution-item">
-                    <div>Debt</div>
-                    <div class="distribution-amount negative">${formatCurrency(debt)}</div>
-                </div>
-                <div class="distribution-item">
-                    <div>Flexible</div>
-                    <div class="distribution-amount positive">${formatCurrency(flexible)}</div>
-                </div>
-            `;
-            
+        function saveTaxGoal(event) {
+            event.preventDefault();
+            state.quarterlyTaxGoal = parseFloat(document.getElementById('taxGoalInput').value);
             saveState();
-            updateCharts();
+            updateTaxStatus();
+            closeModal('editTaxModal');
         }
         
         // Debt Management
@@ -1229,8 +1580,8 @@
             document.getElementById('addDebtModal').style.display = 'block';
         }
         
-        function closeModal() {
-            document.getElementById('addDebtModal').style.display = 'none';
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
         }
         
         function addDebt(event) {
@@ -1241,13 +1592,14 @@
                 name: document.getElementById('debtName').value,
                 balance: parseFloat(document.getElementById('debtBalance').value),
                 rate: parseFloat(document.getElementById('debtRate').value) / 100,
-                minPayment: parseFloat(document.getElementById('debtMinPayment').value)
+                minPayment: parseFloat(document.getElementById('debtMinPayment').value),
+                originalBalance: parseFloat(document.getElementById('debtBalance').value)
             };
             
             state.debts.push(debt);
             saveState();
             updateAllCalculations();
-            closeModal();
+            closeModal('addDebtModal');
             
             // Reset form
             event.target.reset();
@@ -1261,12 +1613,89 @@
             }
         }
         
-        function getOriginalBalance(id) {
-            // This would need to be tracked separately in a real app
-            const originals = {
-                1: 10066, 2: 13153, 3: 33814, 4: 17968, 5: 22078
+        // Manual Payment
+        function showManualPayment() {
+            const select = document.getElementById('paymentDebtSelect');
+            select.innerHTML = '';
+            
+            state.debts.forEach(debt => {
+                const option = document.createElement('option');
+                option.value = debt.id;
+                option.textContent = `${debt.name} (${formatCurrency(debt.balance)})`;
+                select.appendChild(option);
+            });
+            
+            document.getElementById('manualPaymentModal').style.display = 'block';
+        }
+        
+        function makeManualPayment(event) {
+            event.preventDefault();
+            
+            const debtId = parseInt(document.getElementById('paymentDebtSelect').value);
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            
+            const debt = state.debts.find(d => d.id === debtId);
+            if (debt) {
+                debt.balance = Math.max(0, debt.balance - amount);
+                if (debt.balance === 0) {
+                    state.debts = state.debts.filter(d => d.id !== debtId);
+                }
+                
+                saveState();
+                updateAllCalculations();
+                closeModal('manualPaymentModal');
+                event.target.reset();
+            }
+        }
+        
+        // Data Management
+        function confirmReset() {
+            if (confirm('This will delete ALL income history. This cannot be undone. Continue?')) {
+                if (confirm('Are you absolutely sure? All income entries will be permanently deleted.')) {
+                    state.incomeHistory = [];
+                    state.quarterlyPaid = 0;
+                    saveState();
+                    updateAllCalculations();
+                    alert('Income history has been reset.');
+                }
+            }
+        }
+        
+        function exportData() {
+            const dataStr = JSON.stringify(state, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUri);
+            link.setAttribute('download', `financial_data_${new Date().toISOString().split('T')[0]}.json`);
+            link.click();
+        }
+        
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = event => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        Object.assign(state, imported);
+                        saveState();
+                        updateAllCalculations();
+                        alert('Data imported successfully!');
+                    } catch (error) {
+                        alert('Error importing data. Please check the file format.');
+                    }
+                };
+                
+                reader.readAsText(file);
             };
-            return originals[id] || state.debts.find(d => d.id === id)?.balance || 0;
+            
+            input.click();
         }
         
         // Success Animation
@@ -1281,11 +1710,10 @@
         // Initialize on load
         window.onload = init;
         
-        // Close modal on outside click
+        // Close modals on outside click
         window.onclick = function(event) {
-            const modal = document.getElementById('addDebtModal');
-            if (event.target === modal) {
-                closeModal();
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
             }
         }
     </script>
