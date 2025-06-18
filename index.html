@@ -40,6 +40,7 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            padding-bottom: 48px; /* Extra padding for iPad */
         }
         
         /* Fixed Tabs */
@@ -858,10 +859,25 @@
             font-size: 1.1rem;
         }
         
+        /* Version Footer */
+        .version-footer {
+            margin-top: 48px;
+            padding: 24px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        
+        .version-footer > div {
+            margin: 4px 0;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .container {
                 padding: 12px;
+                padding-bottom: 48px;
             }
             
             .header {
@@ -959,44 +975,6 @@
             <div>
                 <h1>Financial Command Center</h1>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-                    v2025.06.18.2 • Last saved: <span id="lastSaved">Never</span>
-                </div>
-            
-            <div class="section">
-                <h2>
-                    Tax Reserve Settings
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Control how tax reserves are handled for 1099 income.</span>
-                    </span>
-                </h2>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="pauseTaxReserve" onchange="updatePauseTaxReserve()">
-                    <label for="pauseTaxReserve">Pause Tax Reserve Contribution Temporarily
-                        <span class="help-icon">ⓘ
-                            <span class="tooltip">Use this when you're temporarily pausing tax savings. You will be warned if tax payments fall behind regardless.</span>
-                        </span>
-                    </label>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>
-                    Financial Health Preview
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Live preview of how your current settings affect your financial health summary.</span>
-                    </span>
-                </h2>
-                <div class="macro-summary" id="settingsPreview" style="background: var(--bg-primary); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
-                    <!-- Populated by JS -->
-                </div>
-            </div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
-                    Last Updated via Code: December 18, 2024 at 2:47 PM EST
-                </div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
-                    Last Saved by User: <span id="lastUserSave">Never</span>
-                </div>
-                <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
                     <span style="color: var(--accent-positive);">●</span> Good Progress
                     <span style="color: var(--accent-warning); margin-left: 12px;">●</span> Caution
                     <span style="color: var(--accent-negative); margin-left: 12px;">●</span> Behind/Focus Needed
@@ -1045,77 +1023,6 @@
                 <h2>📈 Financial Health Summary</h2>
                 <div class="macro-summary" id="macroSummary">
                     <!-- Populated by JS -->
-                </div>
-            </div>
-            
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <h2>Record Income</h2>
-                <form onsubmit="recordIncome(event)" class="income-form">
-                    <div class="form-group">
-                        <label>Amount</label>
-                        <input type="number" id="overrideIncome" placeholder="Enter amount" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Income Type</label>
-                        <select id="incomeType">
-                            <option value="salary">Salary (W-2)</option>
-                            <option value="override">Override (1099)</option>
-                            <option value="commission">Commission (1099)</option>
-                            <option value="distribution">Distribution (K-1)</option>
-                            <option value="bonus">Bonus (W-2)</option>
-                            <option value="other-w2">Other (W-2)</option>
-                            <option value="other-1099">Other (1099)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <input type="text" id="incomeNotes" placeholder="Optional notes">
-                    </div>
-                    <div class="form-group" style="align-self: end;">
-                        <button type="submit" class="pulse">Record Income</button>
-                    </div>
-                </form>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="useDefaultSplit" checked>
-                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax for 1099 only, rest to debt)
-                        <span class="help-icon">ⓘ
-                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission, Override, and Other 1099).</span>
-                        </span>
-                    </label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="deferTaxReserve">
-                    <label for="deferTaxReserve">Defer tax reserve (if already ahead on quarterly taxes)
-                        <span class="help-icon">ⓘ
-                            <span class="tooltip">Check this to skip the tax reserve for this income entry if you're already ahead on quarterly taxes. The tax portion will be added to flexible instead.</span>
-                        </span>
-                    </label>
-                </div>
-                
-                <!-- Custom Split Editor -->
-                <div class="split-editor" id="customSplitEditor" style="display: none;">
-                    <h3>Custom Split for This Income</h3>
-                    <div class="split-inputs">
-                        <div class="split-input-group">
-                            <label>Tithe %</label>
-                            <input type="number" id="customTithe" value="10" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Tax %</label>
-                            <input type="number" id="customTax" value="22.9" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Debt %</label>
-                            <input type="number" id="customDebt" value="30" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Flexible %</label>
-                            <input type="number" id="customFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
-                        </div>
-                    </div>
                 </div>
             </div>
             
@@ -1248,10 +1155,97 @@
                     <!-- Results populated by JS -->
                 </div>
             </div>
+            
+            <!-- Payoff Timeline Chart (Moved from Debts tab) -->
+            <div class="section">
+                <h2>
+                    Debt Payoff Forecast
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Projected debt balance over time based on your average income and payment history. This assumes you continue current patterns.</span>
+                    </span>
+                </h2>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">
+                    Projection based on current strategy and payment levels.
+                </p>
+                <div class="chart-container">
+                    <canvas id="payoffChart"></canvas>
+                </div>
+            </div>
         </div>
         
         <!-- Income Tab -->
         <div class="tab-content" id="income-tab">
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Record Income</h2>
+                <form onsubmit="recordIncome(event)" class="income-form">
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <input type="number" id="overrideIncome" placeholder="Enter amount" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Income Type</label>
+                        <select id="incomeType">
+                            <option value="salary">Salary (W-2)</option>
+                            <option value="override">Override (1099)</option>
+                            <option value="commission">Commission (1099)</option>
+                            <option value="distribution">Distribution (K-1)</option>
+                            <option value="bonus">Bonus (W-2)</option>
+                            <option value="other-w2">Other (W-2)</option>
+                            <option value="other-1099">Other (1099)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="incomeNotes" placeholder="Optional notes">
+                    </div>
+                    <div class="form-group" style="align-self: end;">
+                        <button type="submit" class="pulse">Record Income</button>
+                    </div>
+                </form>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="useDefaultSplit" checked>
+                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax for 1099 only, rest to debt)
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission, Override, and Other 1099).</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="deferTaxReserve">
+                    <label for="deferTaxReserve">Defer tax reserve (if already ahead on quarterly taxes)
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Check this to skip the tax reserve for this income entry if you're already ahead on quarterly taxes. The tax portion will be added to flexible instead.</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <!-- Custom Split Editor -->
+                <div class="split-editor" id="customSplitEditor" style="display: none;">
+                    <h3>Custom Split for This Income</h3>
+                    <div class="split-inputs">
+                        <div class="split-input-group">
+                            <label>Tithe %</label>
+                            <input type="number" id="customTithe" value="10" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Tax %</label>
+                            <input type="number" id="customTax" value="22.9" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Debt %</label>
+                            <input type="number" id="customDebt" value="30" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Flexible %</label>
+                            <input type="number" id="customFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Income Ledger -->
             <div class="income-ledger">
                 <h2>
@@ -1338,19 +1332,6 @@
                 </table>
                 <div style="margin-top: 20px;">
                     <button onclick="showAddDebt()">Add New Debt</button>
-                </div>
-            </div>
-            
-            <!-- Payoff Timeline -->
-            <div class="section">
-                <h2>
-                    Payoff Timeline
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Projected debt balance over time based on your average income and payment history. This assumes you continue current patterns.</span>
-                    </span>
-                </h2>
-                <div class="chart-container">
-                    <canvas id="payoffChart"></canvas>
                 </div>
             </div>
         </div>
@@ -1564,6 +1545,35 @@
             
             <div class="section">
                 <h2>
+                    Tax Reserve Settings
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Control how tax reserves are handled for 1099 income.</span>
+                    </span>
+                </h2>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pauseTaxReserve" onchange="updatePauseTaxReserve()">
+                    <label for="pauseTaxReserve">Pause Tax Reserve Contribution Temporarily
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Use this when you're temporarily pausing tax savings. You will be warned if tax payments fall behind regardless.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>
+                    Financial Health Preview
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Live preview of how your current settings affect your financial health summary.</span>
+                    </span>
+                </h2>
+                <div class="macro-summary" id="settingsPreview" style="background: var(--bg-primary); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>
                     Quarterly IRS Balance Overrides
                     <span class="help-icon">ⓘ
                         <span class="tooltip">Override the calculated balance due for each quarter. Leave blank to use the automatic calculation based on 1099 income.</span>
@@ -1622,166 +1632,204 @@
                 <h2>Data Management</h2>
                 <button onclick="exportData()">Export All Data (JSON)</button>
                 <button onclick="importData()" class="secondary">Import Data</button>
+                <button onclick="resetAllData()" class="danger" style="margin-left: 12px;">Reset All Data</button>
             </div>
         </div>
         
-        <!-- Edit Income Modal -->
-        <div id="editIncomeModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Edit Income Entry</h2>
-                    <span class="close" onclick="closeModal('editIncomeModal')">&times;</span>
+        <!-- Version Footer -->
+        <div class="version-footer">
+            <div>v2025.06.18.3 • Last saved: <span id="lastSaved">Never</span></div>
+            <div>Last Updated via Code: June 18, 2025 at 1:47 PM EST</div>
+            <div>Last Saved by User: <span id="lastUserSave">Never</span></div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <!-- Edit Income Modal -->
+    <div id="editIncomeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Income Entry</h2>
+                <span class="close" onclick="closeModal('editIncomeModal')">&times;</span>
+            </div>
+            <form onsubmit="saveIncomeEdit(event)">
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="editIncomeAmount" step="0.01" required>
                 </div>
-                <form onsubmit="saveIncomeEdit(event)">
-                    <div class="form-group">
-                        <label>Amount</label>
-                        <input type="number" id="editIncomeAmount" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Income Type</label>
-                        <select id="editIncomeType">
-                            <option value="salary">Salary (W-2)</option>
-                            <option value="override">Override (1099)</option>
-                            <option value="commission">Commission (1099)</option>
-                            <option value="distribution">Distribution (K-1)</option>
-                            <option value="bonus">Bonus (W-2)</option>
-                            <option value="other-w2">Other (W-2)</option>
-                            <option value="other-1099">Other (1099)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <input type="text" id="editIncomeNotes">
-                    </div>
-                    <div class="split-editor">
-                        <h3>Allocation Split</h3>
-                        <div class="split-inputs">
-                            <div class="split-input-group">
-                                <label>Tithe %</label>
-                                <input type="number" id="editTithe" min="0" max="100" step="0.1">
-                            </div>
-                            <div class="split-input-group">
-                                <label>Tax %</label>
-                                <input type="number" id="editTax" min="0" max="100" step="0.1">
-                            </div>
-                            <div class="split-input-group">
-                                <label>Debt %</label>
-                                <input type="number" id="editDebt" min="0" max="100" step="0.1">
-                            </div>
-                            <div class="split-input-group">
-                                <label>Flexible %</label>
-                                <input type="number" id="editFlexible" readonly style="background: var(--bg-tertiary);">
-                            </div>
+                <div class="form-group">
+                    <label>Income Type</label>
+                    <select id="editIncomeType">
+                        <option value="salary">Salary (W-2)</option>
+                        <option value="override">Override (1099)</option>
+                        <option value="commission">Commission (1099)</option>
+                        <option value="distribution">Distribution (K-1)</option>
+                        <option value="bonus">Bonus (W-2)</option>
+                        <option value="other-w2">Other (W-2)</option>
+                        <option value="other-1099">Other (1099)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <input type="text" id="editIncomeNotes">
+                </div>
+                <div class="split-editor">
+                    <h3>Allocation Split</h3>
+                    <div class="split-inputs">
+                        <div class="split-input-group">
+                            <label>Tithe %</label>
+                            <input type="number" id="editTithe" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Tax %</label>
+                            <input type="number" id="editTax" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Debt %</label>
+                            <input type="number" id="editDebt" min="0" max="100" step="0.1">
+                        </div>
+                        <div class="split-input-group">
+                            <label>Flexible %</label>
+                            <input type="number" id="editFlexible" readonly style="background: var(--bg-tertiary);">
                         </div>
                     </div>
-                    <button type="submit">Save Changes</button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Add Debt Modal -->
-        <div id="addDebtModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Add New Debt</h2>
-                    <span class="close" onclick="closeModal('addDebtModal')">&times;</span>
                 </div>
-                <form onsubmit="addDebt(event)">
-                    <div class="form-group">
-                        <label>Account Name</label>
-                        <input type="text" id="debtName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Balance</label>
-                        <input type="number" id="debtBalance" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Interest Rate (%)</label>
-                        <input type="number" id="debtRate" step="0.01" min="0" max="100" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Payment</label>
-                        <input type="number" id="debtMinPayment" step="0.01" required>
-                    </div>
-                    <button type="submit">Add Debt</button>
-                </form>
-            </div>
+                <button type="submit">Save Changes</button>
+            </form>
         </div>
-        
-        <!-- Edit Debt Modal -->
-        <div id="editDebtModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Edit Debt</h2>
-                    <span class="close" onclick="closeModal('editDebtModal')">&times;</span>
-                </div>
-                <form onsubmit="saveDebtEdit(event)">
-                    <div class="form-group">
-                        <label>Account Name</label>
-                        <input type="text" id="editDebtName" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Balance</label>
-                        <input type="number" id="editDebtBalance" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Interest Rate (%)</label>
-                        <input type="number" id="editDebtRate" step="0.01" min="0" max="100" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Minimum Payment</label>
-                        <input type="number" id="editDebtMinPayment" step="0.01" required>
-                    </div>
-                    <button type="submit">Save Changes</button>
-                </form>
+    </div>
+    
+    <!-- Add Debt Modal -->
+    <div id="addDebtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Debt</h2>
+                <span class="close" onclick="closeModal('addDebtModal')">&times;</span>
             </div>
-        </div>
-        
-        <!-- Edit Tax Goal Modal -->
-        <div id="editTaxModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Edit Quarterly Tax Goal</h2>
-                    <span class="close" onclick="closeModal('editTaxModal')">&times;</span>
+            <form onsubmit="addDebt(event)">
+                <div class="form-group">
+                    <label>Account Name</label>
+                    <input type="text" id="debtName" required>
                 </div>
-                <form onsubmit="saveTaxGoal(event)">
-                    <div class="form-group">
-                        <label>Q1+Q2 2025 Combined Tax Goal</label>
-                        <input type="number" id="taxGoalInput" step="0.01" required>
-                    </div>
-                    <button type="submit">Save Goal</button>
-                </form>
+                <div class="form-group">
+                    <label>Current Balance</label>
+                    <input type="number" id="debtBalance" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="debtRate" step="0.01" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Minimum Payment</label>
+                    <input type="number" id="debtMinPayment" step="0.01" required>
+                </div>
+                <button type="submit">Add Debt</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Debt Modal -->
+    <div id="editDebtModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Debt</h2>
+                <span class="close" onclick="closeModal('editDebtModal')">&times;</span>
             </div>
-        </div>
-        
-        <!-- Edit Payment Modal -->
-        <div id="editPaymentModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Edit Payment</h2>
-                    <span class="close" onclick="closeModal('editPaymentModal')">&times;</span>
+            <form onsubmit="saveDebtEdit(event)">
+                <div class="form-group">
+                    <label>Account Name</label>
+                    <input type="text" id="editDebtName" required>
                 </div>
-                <form onsubmit="savePaymentEdit(event)">
-                    <div class="form-group">
-                        <label>Payment Amount</label>
-                        <input type="number" id="editPaymentAmount" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Date</label>
-                        <input type="date" id="editPaymentDate" required>
-                    </div>
-                    <div class="form-group" id="editPaymentAccountGroup">
-                        <label id="editPaymentAccountLabel">Account</label>
-                        <select id="editPaymentAccount">
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Notes (Optional)</label>
-                        <input type="text" id="editPaymentNotes">
-                    </div>
-                    <button type="submit">Save Changes</button>
-                </form>
+                <div class="form-group">
+                    <label>Current Balance</label>
+                    <input type="number" id="editDebtBalance" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Interest Rate (%)</label>
+                    <input type="number" id="editDebtRate" step="0.01" min="0" max="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Minimum Payment</label>
+                    <input type="number" id="editDebtMinPayment" step="0.01" required>
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Tax Goal Modal -->
+    <div id="editTaxModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Quarterly Tax Goal</h2>
+                <span class="close" onclick="closeModal('editTaxModal')">&times;</span>
+            </div>
+            <form onsubmit="saveTaxGoal(event)">
+                <div class="form-group">
+                    <label>Q1+Q2 2025 Combined Tax Goal</label>
+                    <input type="number" id="taxGoalInput" step="0.01" required>
+                </div>
+                <button type="submit">Save Goal</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Payment Modal -->
+    <div id="editPaymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Payment</h2>
+                <span class="close" onclick="closeModal('editPaymentModal')">&times;</span>
+            </div>
+            <form onsubmit="savePaymentEdit(event)">
+                <div class="form-group">
+                    <label>Payment Amount</label>
+                    <input type="number" id="editPaymentAmount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Date</label>
+                    <input type="date" id="editPaymentDate" required>
+                </div>
+                <div class="form-group" id="editPaymentAccountGroup">
+                    <label id="editPaymentAccountLabel">Account</label>
+                    <select id="editPaymentAccount">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes (Optional)</label>
+                    <input type="text" id="editPaymentNotes">
+                </div>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Reset Data Modal -->
+    <div id="resetDataModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reset All Data</h2>
+                <span class="close" onclick="closeModal('resetDataModal')">&times;</span>
+            </div>
+            <div style="margin: 20px 0;">
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                    Are you sure you want to reset all data? This will:
+                </p>
+                <ul style="color: var(--text-muted); margin-left: 20px; margin-bottom: 20px;">
+                    <li>Clear all income entries</li>
+                    <li>Remove all manual payments</li>
+                    <li>Reset tax settings and overrides</li>
+                    <li>Delete all debt accounts</li>
+                    <li>Clear the activity log</li>
+                </ul>
+                <p style="color: var(--accent-negative); font-weight: 600;">
+                    This action cannot be undone!
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="closeModal('resetDataModal')" class="secondary">Cancel</button>
+                <button onclick="performResetAllData()" class="danger">Yes, Reset Everything</button>
             </div>
         </div>
     </div>
@@ -2010,8 +2058,8 @@
             });
             document.getElementById(`${tabName}-tab`).classList.add('active');
             
-            // Initialize chart when switching to Debts tab
-            if (tabName === 'debts' && !chartInitialized) {
+            // Initialize chart when switching to Overview tab (where it now lives)
+            if (tabName === 'overview' && !chartInitialized) {
                 setTimeout(() => {
                     initCharts();
                 }, 100);
@@ -2632,26 +2680,18 @@
         }
         
         function updateSettingsPreview() {
-            // Calculate preview based on current settings
             const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
             const monthlyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 12), 0);
-            const avgMonthlyIncome = state.incomeHistory.length > 0 ? 
-                state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0) / Math.max(1, state.incomeHistory.length / 4) : 2000; // Use $2000 as example
             
-            // Calculate with current settings
+            const avgMonthlyIncome = calculateAverageMonthlyIncome();
             const debtPercent = state.defaultSplits.debt / 100;
             const monthlyDebtPayment = avgMonthlyIncome * debtPercent;
             const netPayoffRate = monthlyDebtPayment - monthlyInterest;
             
-            // Simple payoff calculation for preview
-            let previewMonths = 999;
-            if (netPayoffRate > 0) {
-                previewMonths = Math.ceil(totalDebt / netPayoffRate);
-            }
-            
-            const years = Math.floor(previewMonths / 12);
-            const months = previewMonths % 12;
-            const timeToFreedom = years > 0 ? `${years} year${years > 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}` : `${months} month${months !== 1 ? 's' : ''}`;
+            const months = calculatePayoffMonths(totalDebt, monthlyDebtPayment, monthlyInterest);
+            const years = Math.floor(months / 12);
+            const remainingMonths = months % 12;
+            const timeToFreedom = years > 0 ? `${years} year${years > 1 ? 's' : ''} ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}` : `${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
             
             const previewEl = document.getElementById('settingsPreview');
             if (!previewEl) return;
@@ -3491,6 +3531,24 @@
             return totalDebtPayments / months;
         }
         
+        // Calculate average monthly income (shared function for consistency)
+        function calculateAverageMonthlyIncome() {
+            if (state.incomeHistory.length === 0) return 2000; // Default for preview
+            
+            const totalIncome = state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0);
+            const months = Math.max(1, state.incomeHistory.length / 4); // Assume 4 income entries per month
+            
+            return totalIncome / months;
+        }
+        
+        // Calculate payoff months (shared function for consistency)
+        function calculatePayoffMonths(totalDebt, monthlyPayment, monthlyInterest) {
+            if (monthlyPayment <= monthlyInterest) return 999;
+            
+            const netPayoff = monthlyPayment - monthlyInterest;
+            return Math.ceil(totalDebt / netPayoff);
+        }
+        
         // Debt Strategy
         function setDebtStrategy(strategy) {
             const oldStrategy = state.strategy;
@@ -3571,10 +3629,9 @@
             const totalIncome = state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0);
             const monthlyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 12), 0);
             
-            const avgMonthlyIncome = state.incomeHistory.length > 0 ? 
-                totalIncome / Math.max(1, state.incomeHistory.length / 4) : 0; // Assume 4 income entries per month
+            const avgMonthlyIncome = calculateAverageMonthlyIncome();
             
-            // Calculate months to debt free
+            // Calculate months to debt free using consistent method
             const timeline = calculatePayoffTimeline(0, null);
             const monthsToFreedom = timeline.months;
             const years = Math.floor(monthsToFreedom / 12);
@@ -4356,6 +4413,61 @@
                 saveState();
                 updateAllCalculations();
             }
+        }
+        
+        // Reset All Data function
+        function resetAllData() {
+            document.getElementById('resetDataModal').style.display = 'block';
+        }
+        
+        function performResetAllData() {
+            // Reset to defaults
+            state.debts = [
+                { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58, originalBalance: 10066 },
+                { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58, originalBalance: 13153 },
+                { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84, originalBalance: 33814 },
+                { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 }
+            ];
+            state.quarterlyTaxGoal = 9566;
+            state.quarterlyPaid = 0;
+            state.strategy = 'snowball';
+            state.defaultSplits = {
+                tithe: 10,
+                tax: 22.9,
+                debt: 30,
+                flexible: 37.1
+            };
+            state.pauseTaxReserve = false;
+            state.thresholds = {
+                usePercentage: false,
+                interestWarning: 500,
+                interestBad: 800
+            };
+            state.irsOverrides = {
+                'Q1 2025': null,
+                'Q2 2025': null,
+                'Q3 2025': null,
+                'Q4 2025': null
+            };
+            state.incomeHistory = [];
+            state.paymentHistory = [];
+            state.activityLog = [];
+            state.totalInterestPaid = 0;
+            
+            // Log the reset action
+            logActivity(
+                'Reset',
+                'User reset all data to default via Fresh Start',
+                null,
+                'User',
+                {
+                    action: 'Complete data reset'
+                }
+            );
+            
+            closeModal('resetDataModal');
+            saveState();
+            location.reload(); // Reload to reinitialize everything
         }
         
         // Export Functions
