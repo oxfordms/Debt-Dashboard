@@ -855,6 +855,7 @@
         .macro-summary {
             line-height: 1.8;
             color: var(--text-secondary);
+            font-size: 1.1rem;
         }
         
         /* Responsive */
@@ -958,10 +959,39 @@
             <div>
                 <h1>Financial Command Center</h1>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-                    v2025.06.18.1 • Last saved: <span id="lastSaved">Never</span>
+                    v2025.06.18.2 • Last saved: <span id="lastSaved">Never</span>
                 </div>
+            
+            <div class="section">
+                <h2>
+                    Tax Reserve Settings
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Control how tax reserves are handled for 1099 income.</span>
+                    </span>
+                </h2>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="pauseTaxReserve" onchange="updatePauseTaxReserve()">
+                    <label for="pauseTaxReserve">Pause Tax Reserve Contribution Temporarily
+                        <span class="help-icon">ⓘ
+                            <span class="tooltip">Use this when you're temporarily pausing tax savings. You will be warned if tax payments fall behind regardless.</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>
+                    Financial Health Preview
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Live preview of how your current settings affect your financial health summary.</span>
+                    </span>
+                </h2>
+                <div class="macro-summary" id="settingsPreview" style="background: var(--bg-primary); padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
                 <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
-                    Last Updated via Code: December 18, 2024 at 2:45 PM EST
+                    Last Updated via Code: December 18, 2024 at 2:47 PM EST
                 </div>
                 <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
                     Last Saved by User: <span id="lastUserSave">Never</span>
@@ -1515,15 +1545,15 @@
                 <div class="split-inputs">
                     <div class="split-input-group">
                         <label>Tithe %</label>
-                        <input type="number" id="defaultTithe" value="10" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                        <input type="number" id="defaultTithe" value="10" min="0" max="100" step="0.1" oninput="updateDefaultSplits()">
                     </div>
                     <div class="split-input-group">
                         <label>Tax Reserve %</label>
-                        <input type="number" id="defaultTax" value="22.9" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                        <input type="number" id="defaultTax" value="22.9" min="0" max="100" step="0.1" oninput="updateDefaultSplits()">
                     </div>
                     <div class="split-input-group">
                         <label>Debt %</label>
-                        <input type="number" id="defaultDebt" value="30" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                        <input type="number" id="defaultDebt" value="30" min="0" max="100" step="0.1" oninput="updateDefaultSplits()">
                     </div>
                     <div class="split-input-group">
                         <label>Flexible %</label>
@@ -1545,19 +1575,19 @@
                 <div class="irs-overrides">
                     <div class="form-group">
                         <label>Q1 2025 Balance</label>
-                        <input type="number" id="irsOverrideQ1" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                        <input type="number" id="irsOverrideQ1" placeholder="Auto-calculate" step="0.01" oninput="updateIRSOverrides()">
                     </div>
                     <div class="form-group">
                         <label>Q2 2025 Balance</label>
-                        <input type="number" id="irsOverrideQ2" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                        <input type="number" id="irsOverrideQ2" placeholder="Auto-calculate" step="0.01" oninput="updateIRSOverrides()">
                     </div>
                     <div class="form-group">
                         <label>Q3 2025 Balance</label>
-                        <input type="number" id="irsOverrideQ3" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                        <input type="number" id="irsOverrideQ3" placeholder="Auto-calculate" step="0.01" oninput="updateIRSOverrides()">
                     </div>
                     <div class="form-group">
                         <label>Q4 2025 Balance</label>
-                        <input type="number" id="irsOverrideQ4" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                        <input type="number" id="irsOverrideQ4" placeholder="Auto-calculate" step="0.01" oninput="updateIRSOverrides()">
                     </div>
                 </div>
             </div>
@@ -1572,18 +1602,18 @@
                 <div class="split-inputs">
                     <div class="split-input-group">
                         <label>Use Percentage-Based Colors</label>
-                        <select id="usePercentageColors" onchange="updateThresholds()">
+                        <select id="usePercentageColors" oninput="updateThresholds()">
                             <option value="false">Dollar Amounts</option>
                             <option value="true">Percentage Progress</option>
                         </select>
                     </div>
                     <div class="split-input-group">
                         <label>Interest Threshold (Warning if above)</label>
-                        <input type="number" id="interestThresholdWarning" value="500" step="50" onchange="updateThresholds()">
+                        <input type="number" id="interestThresholdWarning" value="500" step="50" oninput="updateThresholds()">
                     </div>
                     <div class="split-input-group">
                         <label>Interest Threshold (Bad if above)</label>
-                        <input type="number" id="interestThresholdBad" value="800" step="50" onchange="updateThresholds()">
+                        <input type="number" id="interestThresholdBad" value="800" step="50" oninput="updateThresholds()">
                     </div>
                 </div>
             </div>
@@ -1774,6 +1804,7 @@
                 debt: 30,
                 flexible: 37.1
             },
+            pauseTaxReserve: false,
             thresholds: {
                 usePercentage: false,
                 interestWarning: 500,
@@ -1811,6 +1842,10 @@
         let payoffChart = null;
         let chartInitialized = false;
         
+        // Debounce timers
+        let defaultSplitTimer = null;
+        let thresholdsTimer = null;
+        
         // Initialize
         function init() {
             try {
@@ -1837,6 +1872,14 @@
                 document.getElementById('usePercentageColors').value = state.thresholds.usePercentage ? 'true' : 'false';
                 document.getElementById('interestThresholdWarning').value = state.thresholds.interestWarning;
                 document.getElementById('interestThresholdBad').value = state.thresholds.interestBad;
+                
+                // Set pause tax reserve
+                if (state.pauseTaxReserve !== undefined) {
+                    document.getElementById('pauseTaxReserve').checked = state.pauseTaxReserve;
+                }
+                
+                // Initialize settings preview
+                updateSettingsPreview();
                 
                 // Set IRS overrides
                 if (state.irsOverrides) {
@@ -1930,7 +1973,7 @@
             
             // Only apply tax to 1099 income types
             if (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099') {
-                customTaxInput.value = state.defaultSplits.tax;
+                customTaxInput.value = state.pauseTaxReserve ? 0 : state.defaultSplits.tax;
             } else {
                 // W-2 income types should not have tax reserve
                 customTaxInput.value = 0;
@@ -2011,6 +2054,9 @@
                     }
                     if (!state.activityLog) {
                         state.activityLog = [];
+                    }
+                    if (state.pauseTaxReserve === undefined) {
+                        state.pauseTaxReserve = false;
                     }
                     
                     // Ensure all debts have originalBalance
@@ -2129,6 +2175,7 @@
                     debt: 30,
                     flexible: 37.1
                 },
+                pauseTaxReserve: false,
                 thresholds: {
                     usePercentage: false,
                     interestWarning: 500,
@@ -2340,6 +2387,11 @@
                     splits.tax = 0;
                     splits.flexible += state.defaultSplits.tax;
                 }
+                // If tax reserve is paused for 1099 income
+                else if (state.pauseTaxReserve && (type === 'commission' || type === 'override' || type === 'other-1099')) {
+                    splits.flexible += splits.tax;
+                    splits.tax = 0;
+                }
             } else {
                 splits = {
                     tithe: parseFloat(document.getElementById('customTithe').value),
@@ -2518,7 +2570,7 @@
             document.getElementById('customFlexible').value = flexible.toFixed(1);
         }
         
-        function updateDefaultSplits() {
+        function updateDefaultSplits(logChanges = false) {
             const oldSplits = { ...state.defaultSplits };
             
             const tithe = parseFloat(document.getElementById('defaultTithe').value) || 0;
@@ -2529,21 +2581,102 @@
             state.defaultSplits = { tithe, tax, debt, flexible };
             document.getElementById('defaultFlexible').value = flexible.toFixed(1);
             
-            // Log if changed
-            if (oldSplits.tithe !== tithe || oldSplits.tax !== tax || 
-                oldSplits.debt !== debt || oldSplits.flexible !== flexible) {
+            // Clear any existing timer
+            if (defaultSplitTimer) clearTimeout(defaultSplitTimer);
+            
+            // Log changes after user stops typing
+            defaultSplitTimer = setTimeout(() => {
+                const changes = [];
+                if (oldSplits.tithe !== tithe) changes.push(`Tithe % changed from ${oldSplits.tithe}% to ${tithe}%`);
+                if (oldSplits.tax !== tax) changes.push(`Tax Reserve % changed from ${oldSplits.tax}% to ${tax}%`);
+                if (oldSplits.debt !== debt) changes.push(`Debt % changed from ${oldSplits.debt}% to ${debt}%`);
+                if (oldSplits.flexible !== flexible) changes.push(`Flexible % changed from ${oldSplits.flexible.toFixed(1)}% to ${flexible.toFixed(1)}%`);
+                
+                if (changes.length > 0) {
+                    logActivity(
+                        'Settings',
+                        'Default income split percentages updated',
+                        null,
+                        'User',
+                        {
+                            changes: changes.join(', '),
+                            splits: `Tithe: ${tithe}%, Tax: ${tax}%, Debt: ${debt}%, Flexible: ${flexible.toFixed(1)}%`
+                        }
+                    );
+                }
+                saveState();
+            }, 500); // Log after 500ms of no changes
+            
+            updateSettingsPreview();
+        }
+        
+        function updatePauseTaxReserve() {
+            const oldValue = state.pauseTaxReserve;
+            state.pauseTaxReserve = document.getElementById('pauseTaxReserve').checked;
+            
+            if (oldValue !== state.pauseTaxReserve) {
                 logActivity(
                     'Settings',
-                    'Default income split percentages updated',
+                    state.pauseTaxReserve ? 'Tax Reserve % paused' : 'Tax Reserve % resumed',
                     null,
                     'User',
                     {
-                        splits: `Tithe: ${tithe}%, Tax: ${tax}%, Debt: ${debt}%, Flexible: ${flexible.toFixed(1)}%`
+                        pauseTaxReserve: state.pauseTaxReserve
                     }
                 );
             }
             
+            updateSettingsPreview();
             saveState();
+            updateTaxWarning();
+        }
+        
+        function updateSettingsPreview() {
+            // Calculate preview based on current settings
+            const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
+            const monthlyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 12), 0);
+            const avgMonthlyIncome = state.incomeHistory.length > 0 ? 
+                state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0) / Math.max(1, state.incomeHistory.length / 4) : 2000; // Use $2000 as example
+            
+            // Calculate with current settings
+            const debtPercent = state.defaultSplits.debt / 100;
+            const monthlyDebtPayment = avgMonthlyIncome * debtPercent;
+            const netPayoffRate = monthlyDebtPayment - monthlyInterest;
+            
+            // Simple payoff calculation for preview
+            let previewMonths = 999;
+            if (netPayoffRate > 0) {
+                previewMonths = Math.ceil(totalDebt / netPayoffRate);
+            }
+            
+            const years = Math.floor(previewMonths / 12);
+            const months = previewMonths % 12;
+            const timeToFreedom = years > 0 ? `${years} year${years > 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}` : `${months} month${months !== 1 ? 's' : ''}`;
+            
+            const previewEl = document.getElementById('settingsPreview');
+            if (!previewEl) return;
+            
+            let previewHTML = `
+                <p><strong>Preview with Current Settings:</strong></p>
+                <p>With ${state.defaultSplits.debt}% of income going to debt (≈${formatCurrency(monthlyDebtPayment)}/month), `;
+            
+            if (netPayoffRate > 0) {
+                previewHTML += `you would be debt-free in <span style="color: var(--accent-primary);">${timeToFreedom}</span>. `;
+                previewHTML += `Your net payoff rate would be <span style="color: var(--accent-positive);">${formatCurrency(netPayoffRate)}/month</span>.`;
+            } else {
+                previewHTML += `you would need to increase the debt percentage to make progress on principal. `;
+                previewHTML += `Current payments would only cover <span style="color: var(--accent-negative);">${formatCurrency(monthlyDebtPayment)}</span> `;
+                previewHTML += `of the <span style="color: var(--accent-negative);">${formatCurrency(monthlyInterest)}/month</span> interest.`;
+            }
+            
+            if (state.pauseTaxReserve) {
+                previewHTML += `</p><p style="color: var(--accent-warning); margin-top: 12px;">⚠️ Tax reserve is currently paused. The ${state.defaultSplits.tax}% normally reserved for taxes will be allocated to flexible spending instead. Remember to set aside funds for quarterly taxes separately.</p>`;
+            }
+            
+            // Add a note about the preview calculation
+            previewHTML += `<p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 12px; font-style: italic;">Note: This preview uses simplified calculations. Actual results may vary based on payment timing and balance changes.</p>`;
+            
+            previewEl.innerHTML = previewHTML;
         }
         
         function updateThresholds() {
@@ -2555,24 +2688,30 @@
                 interestBad: parseFloat(document.getElementById('interestThresholdBad').value) || 800
             };
             
-            // Log if changed
-            if (oldThresholds.usePercentage !== state.thresholds.usePercentage ||
-                oldThresholds.interestWarning !== state.thresholds.interestWarning ||
-                oldThresholds.interestBad !== state.thresholds.interestBad) {
-                logActivity(
-                    'Settings',
-                    'Metric status thresholds updated',
-                    null,
-                    'User',
-                    {
-                        colorMode: state.thresholds.usePercentage ? 'Percentage-based' : 'Dollar amounts',
-                        warningThreshold: formatCurrency(state.thresholds.interestWarning),
-                        badThreshold: formatCurrency(state.thresholds.interestBad)
-                    }
-                );
-            }
+            // Clear any existing timer
+            if (thresholdsTimer) clearTimeout(thresholdsTimer);
             
-            saveState();
+            // Log changes after user stops typing
+            thresholdsTimer = setTimeout(() => {
+                if (oldThresholds.usePercentage !== state.thresholds.usePercentage ||
+                    oldThresholds.interestWarning !== state.thresholds.interestWarning ||
+                    oldThresholds.interestBad !== state.thresholds.interestBad) {
+                    logActivity(
+                        'Settings',
+                        'Metric status thresholds updated',
+                        null,
+                        'User',
+                        {
+                            colorMode: state.thresholds.usePercentage ? 'Percentage-based' : 'Dollar amounts',
+                            warningThreshold: formatCurrency(state.thresholds.interestWarning),
+                            badThreshold: formatCurrency(state.thresholds.interestBad)
+                        }
+                    );
+                }
+                saveState();
+            }, 500);
+            
+            updateSettingsPreview();
             updateHeaderStatus();
         }
         
@@ -3481,8 +3620,9 @@
                 summaryHTML += `(${monthsSaved} months sooner).</p>`;
             }
             
-            summaryHTML += `<p style="margin-top: 16px; font-style: italic; color: var(--text-muted);">"${quoteObj.text}"</p>`;
-            summaryHTML += `<p style="margin-top: 4px; font-size: 0.85rem; color: var(--text-muted); text-align: right;">— ${quoteObj.author}</p>`;
+            summaryHTML += `<p style="margin-top: 16px; font-style: italic; color: var(--text-muted);">
+                "${quoteObj.text}" — <em>${quoteObj.author}</em>
+            </p>`;
             
             summaryEl.innerHTML = summaryHTML;
         }
@@ -3535,7 +3675,10 @@
             
             // Update status message
             const statusEl = document.getElementById('currentQuarterStatus');
-            if (currentQuarterBalance > 0) {
+            
+            if (state.pauseTaxReserve) {
+                statusEl.innerHTML = `<span style="color: var(--accent-warning);">⚠️ Tax reserve paused - set aside funds manually</span>`;
+            } else if (currentQuarterBalance > 0) {
                 const daysUntilDue = Math.ceil((quarterDue - today) / (1000 * 60 * 60 * 24));
                 if (daysUntilDue < 0) {
                     statusEl.innerHTML = `<span style="color: var(--accent-negative);">⚠️ Overdue by ${Math.abs(daysUntilDue)} days</span>`;
@@ -3867,6 +4010,12 @@
             const warningBox = document.getElementById('taxWarningBox');
             const warningContent = document.getElementById('taxWarningContent');
             
+            // Don't show warning if tax reserve is paused
+            if (state.pauseTaxReserve) {
+                warningBox.style.display = 'none';
+                return;
+            }
+            
             // Calculate total unpaid quarterly taxes
             let totalUnpaid = 0;
             const quarters = ['Q1 2025', 'Q2 2025', 'Q3 2025', 'Q4 2025'];
@@ -3889,11 +4038,10 @@
                 
                 overdueQuarters.forEach(({ quarter, balance, dueDate }) => {
                     const daysOverdue = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
-                    const interest = balance * 0.07 * (daysOverdue / 365);
-                    content += `<li>${quarter}: ${formatCurrency(balance)} (${daysOverdue} days overdue, ~${formatCurrency(interest)} interest)</li>`;
+                    content += `<li>${quarter}: ${formatCurrency(balance)} (${daysOverdue} days overdue)</li>`;
                 });
                 
-                content += `</ul><p>IRS charges 7% annual interest on late quarterly payments. Consider paying these immediately to stop interest accumulation.</p>`;
+                content += `</ul><p>Late quarterly tax payments may incur penalties and interest from the IRS. Estimated costs vary, but failure to pay can lead to accumulating debt. Pay promptly to avoid unnecessary fees.</p>`;
                 
                 warningContent.innerHTML = content;
             } else {
@@ -3929,6 +4077,11 @@
             // Check for override first
             if (state.irsOverrides && state.irsOverrides[quarter] !== null) {
                 return state.irsOverrides[quarter];
+            }
+            
+            // If tax reserve is paused, return 0 for auto-calculated balances
+            if (state.pauseTaxReserve) {
+                return 0;
             }
             
             // Calculate based on 1099 income
