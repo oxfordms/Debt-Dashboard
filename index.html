@@ -42,7 +42,7 @@
             padding: 20px;
         }
         
-        /* Tabs */
+        /* Fixed Tabs */
         .tabs {
             display: flex;
             gap: 12px;
@@ -52,7 +52,7 @@
             position: sticky;
             top: 0;
             background: var(--bg-primary);
-            z-index: 100;
+            z-index: 1000;
             padding-top: 20px;
             margin-top: -20px;
         }
@@ -169,7 +169,7 @@
             color: var(--accent-negative);
         }
         
-        /* Help Tooltips */
+        /* Fixed Help Tooltips */
         .help-icon {
             display: inline-flex;
             align-items: center;
@@ -194,7 +194,7 @@
         
         .tooltip {
             position: absolute;
-            bottom: 100%;
+            bottom: calc(100% + 8px);
             left: 50%;
             transform: translateX(-50%);
             background: var(--bg-primary);
@@ -208,21 +208,21 @@
             pointer-events: none;
             transition: opacity 0.2s ease;
             z-index: 10000;
-            margin-bottom: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             white-space: normal;
         }
         
-        /* Adjust tooltip position if it would be cut off */
-        .header .help-icon .tooltip {
-            bottom: auto;
-            top: 100%;
-            margin-bottom: 0;
-            margin-top: 8px;
-        }
-        
+        /* Smart tooltip positioning */
         .help-icon:hover .tooltip {
             opacity: 1;
+        }
+        
+        /* If tooltip would be cut off at top, show below */
+        .stat-pill .help-icon .tooltip,
+        .header .help-icon .tooltip,
+        .tabs ~ * .help-icon:first-child .tooltip {
+            bottom: auto;
+            top: calc(100% + 8px);
         }
         
         /* Quick Actions */
@@ -338,7 +338,7 @@
         
         .ledger-table {
             width: 100%;
-            min-width: 1000px;
+            min-width: 1100px;
         }
         
         .ledger-table th {
@@ -504,14 +504,40 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* Debt table specific styling */
+        /* Increased debt table font size */
         #debtTable {
-            font-size: 1.05rem;
+            font-size: 1.15rem;
         }
         
         #debtTable th,
         #debtTable td {
-            padding: 14px;
+            padding: 16px;
+        }
+        
+        /* Sortable column headers */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-right: 28px;
+        }
+        
+        th.sortable .sort-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0.5;
+            transition: opacity 0.2s ease;
+        }
+        
+        th.sortable:hover .sort-icon {
+            opacity: 1;
+        }
+        
+        th.sortable.active .sort-icon {
+            opacity: 1;
+            color: var(--accent-primary);
         }
         
         /* Charts */
@@ -672,99 +698,6 @@
             margin-top: 16px;
         }
         
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 12px;
-            }
-            
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .header-stats {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .stat-pill {
-                min-width: 120px;
-                padding: 12px 16px;
-            }
-            
-            .stat-pill-value {
-                font-size: 1.2rem;
-            }
-            
-            .tabs {
-                flex-wrap: wrap;
-                overflow-x: auto;
-                scrollbar-width: thin;
-            }
-            
-            .tabs::-webkit-scrollbar {
-                height: 6px;
-            }
-            
-            .tabs::-webkit-scrollbar-thumb {
-                background: var(--border-hover);
-                border-radius: 3px;
-            }
-            
-            .tab {
-                font-size: 0.9rem;
-                padding: 6px 16px;
-            }
-            
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .income-form {
-                grid-template-columns: 1fr;
-            }
-            
-            .modal-content {
-                margin: 10% auto;
-                padding: 20px;
-            }
-            
-            .ledger-table {
-                font-size: 0.85rem;
-            }
-        }
-        
-        /* Animations */
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-            }
-        }
-        
-        .milestone-reached {
-            animation: celebrate 0.5s ease;
-        }
-        
-        @keyframes celebrate {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
-        }
-        
         /* Warning Box */
         .warning-box {
             background: rgba(251, 191, 36, 0.1);
@@ -859,6 +792,11 @@
             color: var(--accent-warning);
         }
         
+        .quarter-status.not-due {
+            background: rgba(156, 163, 175, 0.2);
+            color: var(--text-muted);
+        }
+        
         .quarter-status.overdue {
             background: rgba(248, 113, 113, 0.2);
             color: var(--accent-negative);
@@ -879,6 +817,127 @@
         .quarter-detail-label {
             color: var(--text-muted);
         }
+        
+        /* IRS Settings */
+        .irs-overrides {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        /* Macro Dashboard */
+        .macro-dashboard {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .macro-dashboard h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .macro-summary {
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 12px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .header-stats {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stat-pill {
+                min-width: 120px;
+                padding: 12px 16px;
+            }
+            
+            .stat-pill-value {
+                font-size: 1.2rem;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+                overflow-x: auto;
+                scrollbar-width: thin;
+            }
+            
+            .tabs::-webkit-scrollbar {
+                height: 6px;
+            }
+            
+            .tabs::-webkit-scrollbar-thumb {
+                background: var(--border-hover);
+                border-radius: 3px;
+            }
+            
+            .tab {
+                font-size: 0.9rem;
+                padding: 6px 16px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .income-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+            }
+            
+            .ledger-table {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Animations */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+            }
+        }
+        
+        .milestone-reached {
+            animation: celebrate 0.5s ease;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
     </style>
 </head>
 <body>
@@ -888,7 +947,7 @@
             <div>
                 <h1>Financial Command Center</h1>
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
-                    v2025.06.17.2 • Last saved: <span id="lastSaved">Never</span>
+                    v2025.06.17.3 • Last saved: <span id="lastSaved">Never</span>
                 </div>
                 <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">
                     <span style="color: var(--accent-positive);">●</span> Good Progress
@@ -921,19 +980,27 @@
             </div>
         </div>
         
-        <!-- Tabs -->
+        <!-- Tabs (Fixed) -->
         <div class="tabs">
             <div class="tab active" onclick="switchTab('overview', event)">Overview</div>
             <div class="tab" onclick="switchTab('income', event)">Income</div>
             <div class="tab" onclick="switchTab('debts', event)">Debts</div>
             <div class="tab" onclick="switchTab('taxes', event)">Quarterly Taxes</div>
             <div class="tab" onclick="switchTab('payments', event)">Manual Payments</div>
-            <div class="tab" onclick="switchTab('log', event)">Log</div>
+            <div class="tab" onclick="switchTab('log', event)">Activity Log</div>
             <div class="tab" onclick="switchTab('settings', event)">Settings</div>
         </div>
         
         <!-- Overview Tab -->
         <div class="tab-content active" id="overview-tab">
+            <!-- Macro Dashboard Summary -->
+            <div class="macro-dashboard">
+                <h2>📈 Financial Health Summary</h2>
+                <div class="macro-summary" id="macroSummary">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+            
             <!-- Quick Actions -->
             <div class="quick-actions">
                 <h2>Record Income</h2>
@@ -965,9 +1032,9 @@
                 
                 <div class="checkbox-group">
                     <input type="checkbox" id="useDefaultSplit" checked>
-                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax, rest to debt)
+                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax for 1099 only, rest to debt)
                         <span class="help-icon">ⓘ
-                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission and Override).</span>
+                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission, Override, and Other 1099).</span>
                         </span>
                     </label>
                 </div>
@@ -1012,7 +1079,7 @@
                     <!-- Populated by JS -->
                 </div>
                 <span class="help-icon">ⓘ
-                    <span class="tooltip">IRS interest rates apply to unpaid quarterly taxes. This estimate may change as future 1099 income arrives.</span>
+                    <span class="tooltip">IRS interest rates apply to unpaid quarterly taxes. This estimate updates based on override income and manual balance settings.</span>
                 </span>
             </div>
             
@@ -1028,8 +1095,11 @@
                     </h2>
                     <div class="card-value" id="taxStatus">$0</div>
                     <div class="subtitle">
-                        <span id="taxContributed">$0</span> of <span id="taxGoal">$9,566</span> goal
+                        <span id="taxContributed">$0</span> of <span id="taxGoal">$19,132</span> goal
                         <span class="edit-icon" onclick="editTaxGoal()">✎</span>
+                    </div>
+                    <div class="subtitle" style="margin-top: 8px; color: var(--accent-info);">
+                        <span id="taxProgressPercent">0%</span> of goal reached
                     </div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="taxProgress" style="width: 0%"></div>
@@ -1152,8 +1222,8 @@
                                 <th>Tithe</th>
                                 <th>Tax Reserve</th>
                                 <th>Debt</th>
-                                <th>Flexible (Net)</th>
-                                <th>Net Income</th>
+                                <th>Flexible</th>
+                                <th>Net After Split</th>
                                 <th>Type</th>
                                 <th>Notes</th>
                                 <th>Actions</th>
@@ -1193,24 +1263,23 @@
                 <table id="debtTable">
                     <thead>
                         <tr>
-                            <th style="cursor: pointer;" onclick="sortDebts('name')">
-                                Account <span id="sort-name" style="opacity: 0.5;">↕</span>
+                            <th class="sortable" onclick="sortDebts('name')">
+                                Account <span class="sort-icon" id="sort-name">↕</span>
                             </th>
-                            <th style="cursor: pointer;" onclick="sortDebts('balance')">
-                                Balance <span id="sort-balance">↓</span>
+                            <th class="sortable active" onclick="sortDebts('balance')">
+                                Balance <span class="sort-icon" id="sort-balance">↓</span>
                             </th>
-                            <th style="cursor: pointer;" onclick="sortDebts('rate')">
-                                Rate <span id="sort-rate" style="opacity: 0.5;">↕</span>
+                            <th class="sortable" onclick="sortDebts('rate')">
+                                Rate <span class="sort-icon" id="sort-rate">↕</span>
                             </th>
-                            <th style="cursor: pointer;" onclick="sortDebts('minPayment')" title="Minimum monthly payment required">
-                                Min Payment 
-                                <span id="sort-minPayment" style="opacity: 0.5;">↕</span>
+                            <th class="sortable" onclick="sortDebts('minPayment')" title="Minimum monthly payment required">
+                                Min Payment <span class="sort-icon" id="sort-minPayment">↕</span>
                                 <span class="help-icon" style="position: static; margin-left: 4px;">ⓘ
                                     <span class="tooltip">Minimum monthly payment required by the creditor</span>
                                 </span>
                             </th>
-                            <th style="cursor: pointer;" onclick="sortDebts('monthlyInterest')">
-                                Monthly Interest <span id="sort-monthlyInterest" style="opacity: 0.5;">↕</span>
+                            <th class="sortable" onclick="sortDebts('monthlyInterest')">
+                                Monthly Interest <span class="sort-icon" id="sort-monthlyInterest">↕</span>
                             </th>
                             <th>Payoff Date</th>
                             <th>Actions</th>
@@ -1381,73 +1450,7 @@
             </div>
         </div>
         
-        <!-- Settings Tab -->
-        <div class="tab-content" id="settings-tab">
-            <div class="section">
-                <h2>
-                    Default Income Split
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Adjust the default percentages for how income is allocated. These can be overridden per income entry if needed.</span>
-                    </span>
-                </h2>
-                <p style="color: var(--text-muted); margin-bottom: 20px;">
-                    Adjust the default percentages for how income is allocated. These can be overridden per income entry.
-                </p>
-                <div class="split-inputs">
-                    <div class="split-input-group">
-                        <label>Tithe %</label>
-                        <input type="number" id="defaultTithe" value="10" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Tax Reserve %</label>
-                        <input type="number" id="defaultTax" value="22.9" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Debt %</label>
-                        <input type="number" id="defaultDebt" value="30" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Flexible %</label>
-                        <input type="number" id="defaultFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>
-                    Metric Status Thresholds
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Configure when the top metrics show green (good), yellow (warning), or red (behind) status colors.</span>
-                    </span>
-                </h2>
-                <div class="split-inputs">
-                    <div class="split-input-group">
-                        <label>Debt Threshold (Good if below)</label>
-                        <input type="number" id="debtThresholdGood" value="50000" step="1000" onchange="updateThresholds()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Debt Threshold (Warning if below)</label>
-                        <input type="number" id="debtThresholdWarning" value="75000" step="1000" onchange="updateThresholds()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Interest Threshold (Warning if above)</label>
-                        <input type="number" id="interestThresholdWarning" value="500" step="50" onchange="updateThresholds()">
-                    </div>
-                    <div class="split-input-group">
-                        <label>Interest Threshold (Bad if above)</label>
-                        <input type="number" id="interestThresholdBad" value="800" step="50" onchange="updateThresholds()">
-                    </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>Data Management</h2>
-                <button onclick="exportData()">Export All Data (JSON)</button>
-                <button onclick="importData()" class="secondary">Import Data</button>
-            </div>
-        </div>
-        
-        <!-- Log Tab -->
+        <!-- Activity Log Tab -->
         <div class="tab-content" id="log-tab">
             <div class="section">
                 <h2>
@@ -1477,6 +1480,101 @@
                     <button onclick="exportActivityLog()" class="secondary">Export Log</button>
                     <button onclick="clearActivityLog()" class="danger">Clear Log</button>
                 </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="section">
+                <h2>
+                    Default Income Split
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Adjust the default percentages for how income is allocated. These can be overridden per income entry.</span>
+                    </span>
+                </h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Adjust the default percentages for how income is allocated. These can be overridden per income entry.
+                </p>
+                <div class="split-inputs">
+                    <div class="split-input-group">
+                        <label>Tithe %</label>
+                        <input type="number" id="defaultTithe" value="10" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Tax Reserve %</label>
+                        <input type="number" id="defaultTax" value="22.9" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Debt %</label>
+                        <input type="number" id="defaultDebt" value="30" min="0" max="100" step="0.1" onchange="updateDefaultSplits()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Flexible %</label>
+                        <input type="number" id="defaultFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>
+                    Quarterly IRS Balance Overrides
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Override the calculated balance due for each quarter. Leave blank to use the automatic calculation based on 1099 income.</span>
+                    </span>
+                </h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    Enter a starting balance due for each quarter if you need to override the automatic calculation.
+                </p>
+                <div class="irs-overrides">
+                    <div class="form-group">
+                        <label>Q1 2025 Balance</label>
+                        <input type="number" id="irsOverrideQ1" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                    </div>
+                    <div class="form-group">
+                        <label>Q2 2025 Balance</label>
+                        <input type="number" id="irsOverrideQ2" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                    </div>
+                    <div class="form-group">
+                        <label>Q3 2025 Balance</label>
+                        <input type="number" id="irsOverrideQ3" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                    </div>
+                    <div class="form-group">
+                        <label>Q4 2025 Balance</label>
+                        <input type="number" id="irsOverrideQ4" placeholder="Auto-calculate" step="0.01" onchange="updateIRSOverrides()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>
+                    Metric Status Thresholds
+                    <span class="help-icon">ⓘ
+                        <span class="tooltip">Configure when the top metrics show green (good), yellow (warning), or red (behind) status colors.</span>
+                    </span>
+                </h2>
+                <div class="split-inputs">
+                    <div class="split-input-group">
+                        <label>Use Percentage-Based Colors</label>
+                        <select id="usePercentageColors" onchange="updateThresholds()">
+                            <option value="false">Dollar Amounts</option>
+                            <option value="true">Percentage Progress</option>
+                        </select>
+                    </div>
+                    <div class="split-input-group">
+                        <label>Interest Threshold (Warning if above)</label>
+                        <input type="number" id="interestThresholdWarning" value="500" step="50" onchange="updateThresholds()">
+                    </div>
+                    <div class="split-input-group">
+                        <label>Interest Threshold (Bad if above)</label>
+                        <input type="number" id="interestThresholdBad" value="800" step="50" onchange="updateThresholds()">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>Data Management</h2>
+                <button onclick="exportData()">Export All Data (JSON)</button>
+                <button onclick="importData()" class="secondary">Import Data</button>
             </div>
         </div>
         
@@ -1563,6 +1661,35 @@
             </div>
         </div>
         
+        <!-- Edit Debt Modal -->
+        <div id="editDebtModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Edit Debt</h2>
+                    <span class="close" onclick="closeModal('editDebtModal')">&times;</span>
+                </div>
+                <form onsubmit="saveDebtEdit(event)">
+                    <div class="form-group">
+                        <label>Account Name</label>
+                        <input type="text" id="editDebtName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Balance</label>
+                        <input type="number" id="editDebtBalance" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Interest Rate (%)</label>
+                        <input type="number" id="editDebtRate" step="0.01" min="0" max="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Payment</label>
+                        <input type="number" id="editDebtMinPayment" step="0.01" required>
+                    </div>
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
+        </div>
+        
         <!-- Edit Tax Goal Modal -->
         <div id="editTaxModal" class="modal">
             <div class="modal-content">
@@ -1631,10 +1758,15 @@
                 flexible: 37.1
             },
             thresholds: {
-                debtGood: 50000,
-                debtWarning: 75000,
+                usePercentage: false,
                 interestWarning: 500,
                 interestBad: 800
+            },
+            irsOverrides: {
+                'Q1 2025': null,
+                'Q2 2025': null,
+                'Q3 2025': null,
+                'Q4 2025': null
             },
             incomeHistory: [],
             paymentHistory: [],
@@ -1642,6 +1774,7 @@
             totalInterestPaid: 0,
             currentEditingIncomeId: null,
             currentEditingPaymentId: null,
+            currentEditingDebtId: null,
             debtSort: { column: 'balance', ascending: true }
         };
         
@@ -1654,11 +1787,15 @@
             try {
                 loadState();
                 
+                // Remove Pinnacle if it exists (it's a checking account)
+                state.debts = state.debts.filter(d => !d.name.toLowerCase().includes('pinnacle'));
+                
                 // Initialize charts after a delay to ensure Chart.js is loaded
                 setTimeout(() => {
                     initCharts();
                     updateAllCalculations();
                     updateTaxWarning();
+                    updateMacroSummary();
                 }, 100);
                 
                 // Set default split values
@@ -1668,22 +1805,38 @@
                 document.getElementById('defaultFlexible').value = state.defaultSplits.flexible;
                 
                 // Set threshold values
-                document.getElementById('debtThresholdGood').value = state.thresholds.debtGood;
-                document.getElementById('debtThresholdWarning').value = state.thresholds.debtWarning;
+                document.getElementById('usePercentageColors').value = state.thresholds.usePercentage ? 'true' : 'false';
                 document.getElementById('interestThresholdWarning').value = state.thresholds.interestWarning;
                 document.getElementById('interestThresholdBad').value = state.thresholds.interestBad;
+                
+                // Set IRS overrides
+                if (state.irsOverrides) {
+                    document.getElementById('irsOverrideQ1').value = state.irsOverrides['Q1 2025'] || '';
+                    document.getElementById('irsOverrideQ2').value = state.irsOverrides['Q2 2025'] || '';
+                    document.getElementById('irsOverrideQ3').value = state.irsOverrides['Q3 2025'] || '';
+                    document.getElementById('irsOverrideQ4').value = state.irsOverrides['Q4 2025'] || '';
+                }
                 
                 // Set up checkbox listener
                 document.getElementById('useDefaultSplit').addEventListener('change', function() {
                     document.getElementById('customSplitEditor').style.display = 
                         this.checked ? 'none' : 'block';
+                    
+                    // Update custom tax based on income type
+                    if (!this.checked) {
+                        updateCustomTaxBasedOnType();
+                    }
+                });
+                
+                // Set up income type listener
+                document.getElementById('incomeType').addEventListener('change', function() {
+                    updateCustomTaxBasedOnType();
                 });
                 
                 // Set up defer tax checkbox listener
                 document.getElementById('deferTaxReserve').addEventListener('change', function() {
                     const incomeType = document.getElementById('incomeType').value;
                     if (this.checked && (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099')) {
-                        // Show message that tax will be deferred
                         console.log('Tax reserve will be deferred for this 1099 income');
                     }
                 });
@@ -1732,6 +1885,22 @@
             }
         }
         
+        // Update custom tax based on income type
+        function updateCustomTaxBasedOnType() {
+            const incomeType = document.getElementById('incomeType').value;
+            const customTaxInput = document.getElementById('customTax');
+            
+            // Only apply tax to 1099 income types
+            if (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099') {
+                customTaxInput.value = state.defaultSplits.tax;
+            } else {
+                // W-2 income types should not have tax reserve
+                customTaxInput.value = 0;
+            }
+            
+            updateCustomFlexible();
+        }
+        
         // Tab Management
         function switchTab(tabName, event) {
             // Update tab buttons
@@ -1745,7 +1914,8 @@
                 tabs.forEach(tab => {
                     if (tab.textContent.toLowerCase().includes(tabName.toLowerCase()) ||
                         (tabName === 'payments' && tab.textContent.includes('Manual Payments')) ||
-                        (tabName === 'taxes' && tab.textContent.includes('Quarterly Taxes'))) {
+                        (tabName === 'taxes' && tab.textContent.includes('Quarterly Taxes')) ||
+                        (tabName === 'log' && tab.textContent.includes('Activity Log'))) {
                         tab.classList.add('active');
                     }
                 });
@@ -1779,10 +1949,20 @@
                     // Ensure new properties exist
                     if (!state.thresholds) {
                         state.thresholds = {
-                            debtGood: 50000,
-                            debtWarning: 75000,
+                            usePercentage: false,
                             interestWarning: 500,
                             interestBad: 800
+                        };
+                    }
+                    if (!state.thresholds.hasOwnProperty('usePercentage')) {
+                        state.thresholds.usePercentage = false;
+                    }
+                    if (!state.irsOverrides) {
+                        state.irsOverrides = {
+                            'Q1 2025': null,
+                            'Q2 2025': null,
+                            'Q3 2025': null,
+                            'Q4 2025': null
                         };
                     }
                     if (!state.paymentHistory) {
@@ -1893,8 +2073,7 @@
                     { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58, originalBalance: 10066 },
                     { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58, originalBalance: 13153 },
                     { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84, originalBalance: 33814 },
-                    { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 },
-                    { id: 5, name: 'Pinnacle', balance: 22078, rate: 0, minPayment: 0, originalBalance: 22078 }
+                    { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 }
                 ],
                 quarterlyTaxGoal: 9566,
                 quarterlyPaid: 0,
@@ -1906,16 +2085,23 @@
                     flexible: 37.1
                 },
                 thresholds: {
-                    debtGood: 50000,
-                    debtWarning: 75000,
+                    usePercentage: false,
                     interestWarning: 500,
                     interestBad: 800
                 },
+                irsOverrides: {
+                    'Q1 2025': null,
+                    'Q2 2025': null,
+                    'Q3 2025': null,
+                    'Q4 2025': null
+                },
                 incomeHistory: [],
                 paymentHistory: [],
+                activityLog: [],
                 totalInterestPaid: 0,
                 currentEditingIncomeId: null,
                 currentEditingPaymentId: null,
+                currentEditingDebtId: null,
                 debtSort: { column: 'balance', ascending: true }
             });
         }
@@ -1982,13 +2168,25 @@
                 const row = document.createElement('tr');
                 const date = new Date(entry.timestamp);
                 
+                // Format details in a human-readable way
+                let detailsStr = '';
+                if (entry.details && typeof entry.details === 'object') {
+                    const detailParts = [];
+                    for (const [key, value] of Object.entries(entry.details)) {
+                        if (value !== null && value !== undefined) {
+                            detailParts.push(`${key}: ${value}`);
+                        }
+                    }
+                    detailsStr = detailParts.join(', ');
+                }
+                
                 row.innerHTML = `
                     <td>${date.toLocaleString()}</td>
                     <td>${entry.type}</td>
                     <td>${entry.description}</td>
                     <td>${entry.amount ? formatCurrency(entry.amount) : '-'}</td>
                     <td>${entry.source}</td>
-                    <td>${JSON.stringify(entry.details)}</td>
+                    <td>${detailsStr}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -2032,7 +2230,7 @@
             event.preventDefault();
             
             const income = parseFloat(document.getElementById('overrideIncome').value);
-            const type = document.getElementById('incomeType').value || 'other'; // Default to 'other' if no type selected
+            const type = document.getElementById('incomeType').value || 'other';
             const notes = document.getElementById('incomeNotes').value;
             const useDefault = document.getElementById('useDefaultSplit').checked;
             const deferTax = document.getElementById('deferTaxReserve').checked;
@@ -2043,6 +2241,11 @@
             let splits;
             if (useDefault) {
                 splits = { ...state.defaultSplits };
+                // For W-2 income, don't apply tax reserve
+                if (type === 'salary' || type === 'bonus' || type === 'other-w2' || type === 'distribution') {
+                    splits.tax = 0;
+                    splits.flexible += state.defaultSplits.tax;
+                }
             } else {
                 splits = {
                     tithe: parseFloat(document.getElementById('customTithe').value),
@@ -2088,7 +2291,7 @@
             // Log activity
             logActivity('Income', `Recorded ${getIncomeTypeLabel(type)} income`, income, 'User', {
                 type,
-                splits,
+                splits: `Tithe: ${splits.tithe}%, Tax: ${splits.tax}%, Debt: ${splits.debt}%, Flexible: ${splits.flexible}%`,
                 notes
             });
             
@@ -2118,7 +2321,7 @@
             
             // Populate edit form
             document.getElementById('editIncomeAmount').value = entry.amount;
-            document.getElementById('editIncomeType').value = entry.type || 'other'; // Default to 'other' if undefined
+            document.getElementById('editIncomeType').value = entry.type || 'other';
             document.getElementById('editIncomeNotes').value = entry.notes || '';
             document.getElementById('editTithe').value = entry.splits.tithe;
             document.getElementById('editTax').value = entry.splits.tax;
@@ -2141,7 +2344,7 @@
             
             // Get new values
             const newAmount = parseFloat(document.getElementById('editIncomeAmount').value);
-            const newType = document.getElementById('editIncomeType').value || 'other'; // Default to 'other' if undefined
+            const newType = document.getElementById('editIncomeType').value || 'other';
             const newNotes = document.getElementById('editIncomeNotes').value;
             
             const newSplits = {
@@ -2222,14 +2425,26 @@
         
         function updateThresholds() {
             state.thresholds = {
-                debtGood: parseFloat(document.getElementById('debtThresholdGood').value) || 50000,
-                debtWarning: parseFloat(document.getElementById('debtThresholdWarning').value) || 75000,
+                usePercentage: document.getElementById('usePercentageColors').value === 'true',
                 interestWarning: parseFloat(document.getElementById('interestThresholdWarning').value) || 500,
                 interestBad: parseFloat(document.getElementById('interestThresholdBad').value) || 800
             };
             
             saveState();
             updateHeaderStatus();
+        }
+        
+        function updateIRSOverrides() {
+            state.irsOverrides = {
+                'Q1 2025': parseFloat(document.getElementById('irsOverrideQ1').value) || null,
+                'Q2 2025': parseFloat(document.getElementById('irsOverrideQ2').value) || null,
+                'Q3 2025': parseFloat(document.getElementById('irsOverrideQ3').value) || null,
+                'Q4 2025': parseFloat(document.getElementById('irsOverrideQ4').value) || null
+            };
+            
+            saveState();
+            updateQuarterlyTaxes();
+            updateTaxWarning();
         }
         
         // Income Ledger
@@ -2258,7 +2473,7 @@
                     const splits = entry.splits || { tithe: 0, tax: 0, debt: 0, flexible: 0 };
                     const safeType = getIncomeTypeLabel(entry.type);
                     const safeNotes = entry.notes || '';
-                    const netIncome = entry.amount - (entry.tithe || 0) - (entry.tax || 0) - (entry.debt || 0);
+                    const netAfterSplit = entry.flexible || 0;
                     
                     row.innerHTML = `
                         <td>${date.toLocaleDateString()}</td>
@@ -2267,7 +2482,7 @@
                         <td>${formatCurrency(entry.tax || 0)} (${(splits.tax || 0).toFixed(1)}%)</td>
                         <td>${formatCurrency(entry.debt || 0)} (${(splits.debt || 0).toFixed(1)}%)</td>
                         <td>${formatCurrency(entry.flexible || 0)} (${(splits.flexible || 0).toFixed(1)}%)</td>
-                        <td class="positive">${formatCurrency(netIncome)}</td>
+                        <td class="positive">${formatCurrency(netAfterSplit)}</td>
                         <td>${safeType}</td>
                         <td>${safeNotes === '' ? '-' : safeNotes}</td>
                         <td>
@@ -2555,6 +2770,46 @@
             updateAllCalculations();
         }
         
+        // Debt Management
+        function editDebt(id) {
+            const debt = state.debts.find(d => d.id === id);
+            if (!debt) return;
+            
+            state.currentEditingDebtId = id;
+            
+            // Populate edit form
+            document.getElementById('editDebtName').value = debt.name;
+            document.getElementById('editDebtBalance').value = debt.balance;
+            document.getElementById('editDebtRate').value = debt.rate * 100;
+            document.getElementById('editDebtMinPayment').value = debt.minPayment;
+            
+            document.getElementById('editDebtModal').style.display = 'block';
+        }
+        
+        function saveDebtEdit(event) {
+            event.preventDefault();
+            
+            const id = state.currentEditingDebtId;
+            const debt = state.debts.find(d => d.id === id);
+            if (!debt) return;
+            
+            // Update debt
+            debt.name = document.getElementById('editDebtName').value;
+            debt.balance = parseFloat(document.getElementById('editDebtBalance').value);
+            debt.rate = parseFloat(document.getElementById('editDebtRate').value) / 100;
+            debt.minPayment = parseFloat(document.getElementById('editDebtMinPayment').value);
+            
+            // Log activity
+            logActivity('Edit', `Edited debt: ${debt.name}`, debt.balance, 'User', {
+                name: debt.name,
+                rate: (debt.rate * 100).toFixed(2) + '%'
+            });
+            
+            closeModal('editDebtModal');
+            saveState();
+            updateAllCalculations();
+        }
+        
         // What-If Calculator
         function calculateWhatIf() {
             const extraPayment = parseFloat(document.getElementById('extraPayment').value) || 0;
@@ -2783,7 +3038,8 @@
                     ['Debt Selects', updateDebtSelects],
                     ['Quarterly Taxes', updateQuarterlyTaxes],
                     ['Tax Warning', updateTaxWarning],
-                    ['Activity Log', updateActivityLog]
+                    ['Activity Log', updateActivityLog],
+                    ['Macro Summary', updateMacroSummary]
                 ];
                 
                 updates.forEach(([name, updateFunction]) => {
@@ -2804,1205 +3060,14 @@
             }
         }
         
-        function updateHeaderStatus() {
+        function updateMacroSummary() {
             const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
             const originalTotalDebt = state.debts.reduce((sum, d) => sum + d.originalBalance, 0);
-            const monthlyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 12), 0);
-            
-            // Calculate debt payoff progress percentage
             const debtPaidOff = originalTotalDebt - totalDebt;
             const debtProgress = originalTotalDebt > 0 ? (debtPaidOff / originalTotalDebt) * 100 : 0;
             
-            // Update debt status based on progress
-            const debtPill = document.getElementById('totalDebtPill');
-            if (debtProgress >= 75) {
-                debtPill.className = 'stat-pill status-good';
-            } else if (debtProgress >= 50) {
-                debtPill.className = 'stat-pill status-warning';
-            } else {
-                debtPill.className = 'stat-pill status-bad';
-            }
-            
-            // Update the tooltip to reflect progress-based coloring
-            const debtTooltip = debtPill.querySelector('.tooltip');
-            if (debtTooltip) {
-                debtTooltip.innerHTML = `Progress: ${debtProgress.toFixed(1)}% paid off<br>Green = 75%+ paid<br>Yellow = 50-75% paid<br>Red = Less than 50% paid`;
-            }
-            
-            // Update interest status
-            const interestPill = document.getElementById('monthlyInterestPill');
-            if (monthlyInterest <= state.thresholds.interestWarning) {
-                interestPill.className = 'stat-pill status-good';
-            } else if (monthlyInterest <= state.thresholds.interestBad) {
-                interestPill.className = 'stat-pill status-warning';
-            } else {
-                interestPill.className = 'stat-pill status-bad';
-            }
-            
-            // Update payoff status
-            const payoffPill = document.getElementById('payoffDatePill');
-            if (totalDebt === 0) {
-                payoffPill.className = 'stat-pill status-good';
-            } else if (debtProgress >= 50) {
-                payoffPill.className = 'stat-pill status-warning';
-            } else {
-                payoffPill.className = 'stat-pill status-bad';
-            }
-        }
-        
-        function updateDebtSummary() {
-            const totalDebt = state.debts.reduce((sum, d) => sum + d.balance, 0);
-            const debtCount = state.debts.length;
-            
-            let avgRate = 0;
-            if (totalDebt > 0) {
-                avgRate = state.debts.reduce((sum, d) => sum + d.rate * d.balance, 0) / totalDebt;
-            }
-            
-            const dailyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 365), 0);
-            const weeklyInterest = dailyInterest * 7;
-            const monthlyInterest = dailyInterest * 30;
-            
-            // Update UI
-            document.getElementById('totalDebt').textContent = formatCurrency(totalDebt, true);
-            document.getElementById('totalDebtHeader').textContent = formatCurrency(totalDebt, true);
-            document.getElementById('monthlyInterestHeader').textContent = formatCurrency(monthlyInterest, true);
-            document.getElementById('debtCount').textContent = debtCount;
-            document.getElementById('avgRate').textContent = (avgRate * 100).toFixed(1) + '%';
-            
-            document.getElementById('dailyInterest').textContent = formatCurrency(dailyInterest);
-            document.getElementById('weeklyInterest').textContent = formatCurrency(weeklyInterest);
-            document.getElementById('monthlyInterest').textContent = formatCurrency(monthlyInterest);
-        }
-        
-        function updateTaxStatus() {
-            // Q1+Q2 combined goal
-            const combinedGoal = 9566 * 2; // $19,132 for Q1 and Q2 combined
-            const progress = (state.quarterlyPaid / combinedGoal) * 100;
-            const remaining = Math.max(0, combinedGoal - state.quarterlyPaid);
-            
-            document.getElementById('taxStatus').textContent = 
-                remaining > 0 ? formatCurrency(remaining, true) : '+' + formatCurrency(Math.abs(remaining));
-            document.getElementById('taxStatus').className = 
-                remaining > 0 ? 'card-value negative' : 'card-value positive';
-            
-            document.getElementById('taxContributed').textContent = formatCurrency(state.quarterlyPaid);
-            document.getElementById('taxGoal').textContent = formatCurrency(combinedGoal);
-            
-            const progressBar = document.getElementById('taxProgress');
-            progressBar.style.width = Math.min(100, progress) + '%';
-            progressBar.className = progress >= 100 ? 'progress-fill' : 'progress-fill danger';
-            
-            // Update current quarter tax
-            updateCurrentQuarterTax();
-        }
-        
-        function updateCurrentQuarterTax() {
-            const today = new Date();
-            const currentMonth = today.getMonth();
-            let currentQuarter, dueDate;
-            
-            if (currentMonth < 3) {
-                currentQuarter = 'Q1 2025';
-                dueDate = new Date('2025-04-15');
-            } else if (currentMonth < 6) {
-                currentQuarter = 'Q2 2025';
-                dueDate = new Date('2025-06-16');
-            } else if (currentMonth < 9) {
-                currentQuarter = 'Q3 2025';
-                dueDate = new Date('2025-09-15');
-            } else {
-                currentQuarter = 'Q4 2025';
-                dueDate = new Date('2026-01-15');
-            }
-            
-            // Calculate current quarter tax from 1099 income
-            let currentQuarterTax = 0;
-            state.incomeHistory.forEach(entry => {
-                if (entry && (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099')) {
-                    const incomeDate = new Date(entry.date);
-                    const incomeMonth = incomeDate.getMonth();
-                    
-                    // Check if income is in current quarter
-                    if ((currentQuarter === 'Q1 2025' && incomeMonth < 3) ||
-                        (currentQuarter === 'Q2 2025' && incomeMonth >= 3 && incomeMonth < 6) ||
-                        (currentQuarter === 'Q3 2025' && incomeMonth >= 6 && incomeMonth < 9) ||
-                        (currentQuarter === 'Q4 2025' && incomeMonth >= 9)) {
-                        currentQuarterTax += entry.tax || 0;
-                    }
-                }
-            });
-            
-            // Subtract payments made for current quarter
-            let currentQuarterPaid = 0;
-            state.paymentHistory.forEach(payment => {
-                if (payment && payment.type === 'tax' && payment.account === currentQuarter) {
-                    currentQuarterPaid += payment.amount;
-                }
-            });
-            
-            const unpaidTax = Math.max(0, currentQuarterTax - currentQuarterPaid);
-            const daysUntilDue = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-            
-            // Update UI
-            document.getElementById('currentQuarterTax').textContent = formatCurrency(unpaidTax);
-            document.getElementById('currentQuarterTax').className = unpaidTax > 0 ? 'card-value warning' : 'card-value positive';
-            document.getElementById('currentQuarter').textContent = currentQuarter;
-            document.getElementById('currentQuarterDue').textContent = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            
-            const statusEl = document.getElementById('currentQuarterStatus');
-            if (unpaidTax > 0) {
-                if (daysUntilDue < 0) {
-                    statusEl.innerHTML = `<span style="color: var(--accent-negative);">⚠️ Overdue by ${Math.abs(daysUntilDue)} days</span>`;
-                } else if (daysUntilDue < 30) {
-                    statusEl.innerHTML = `<span style="color: var(--accent-warning);">⏰ Due in ${daysUntilDue} days</span>`;
-                } else {
-                    statusEl.innerHTML = `<span style="color: var(--text-muted);">Due in ${daysUntilDue} days</span>`;
-                }
-            } else {
-                statusEl.innerHTML = `<span style="color: var(--accent-positive);">✓ Paid in full</span>`;
-            }
-        }
-        
-        function updateIncomesSummary() {
             const totalIncome = state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0);
-            const incomeByType = {};
+            const monthlyInterest = state.debts.reduce((sum, d) => sum + (d.balance * d.rate / 12), 0);
             
-            // Safely process each income entry with robust error handling
-            state.incomeHistory.forEach(entry => {
-                // Ensure entry exists and has required properties
-                if (!entry || typeof entry.amount !== 'number') {
-                    console.warn('Invalid income entry found:', entry);
-                    return;
-                }
-                
-                // Normalize the type - handle all undefined/null/empty cases
-                let entryType = 'other'; // Default fallback
-                
-                if (entry.hasOwnProperty('type') && entry.type !== null && entry.type !== undefined) {
-                    const typeStr = String(entry.type).trim();
-                    if (typeStr !== '' && typeStr !== 'undefined' && typeStr !== 'null') {
-                        entryType = typeStr;
-                    }
-                }
-                
-                // Initialize the type group if it doesn't exist
-                if (!incomeByType.hasOwnProperty(entryType)) {
-                    incomeByType[entryType] = 0;
-                }
-                
-                // Add the amount to the type group
-                incomeByType[entryType] += entry.amount;
-            });
-            
-            // Update total income display
-            const totalIncomeElement = document.getElementById('totalIncome');
-            const incomeCountElement = document.getElementById('incomeCount');
-            
-            if (totalIncomeElement) {
-                totalIncomeElement.textContent = formatCurrency(totalIncome);
-            }
-            if (incomeCountElement) {
-                incomeCountElement.textContent = state.incomeHistory.length;
-            }
-            
-            // Update type breakdown with error handling
-            const summaryDiv = document.getElementById('incomeSummary');
-            if (!summaryDiv) {
-                console.warn('Income summary div not found');
-                return;
-            }
-            
-            summaryDiv.innerHTML = '';
-            
-            // Only process if we have income data
-            if (Object.keys(incomeByType).length === 0) {
-                summaryDiv.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No income entries recorded yet</div>';
-                return;
-            }
-            
-            // Create cards for each income type
-            Object.entries(incomeByType).forEach(([type, amount]) => {
-                try {
-                    const card = document.createElement('div');
-                    card.className = 'income-type-card';
-                    
-                    // Safely get the label and format the amount
-                    const safeLabel = getIncomeTypeLabel(type);
-                    const safeAmount = formatCurrency(amount || 0);
-                    
-                    card.innerHTML = `
-                        <div class="income-type-label">${safeLabel}</div>
-                        <div class="income-type-amount">${safeAmount}</div>
-                    `;
-                    summaryDiv.appendChild(card);
-                } catch (error) {
-                    console.error('Error creating income type card:', error, { type, amount });
-                }
-            });
-        }
-        
-        function updateDebtTable() {
-            const tbody = document.getElementById('debtTableBody');
-            tbody.innerHTML = '';
-            
-            // Get sorted debts
-            let sortedDebts = [...state.debts];
-            
-            // Add calculated fields for sorting
-            sortedDebts = sortedDebts.map(debt => ({
-                ...debt,
-                monthlyInterest: debt.balance * debt.rate / 12
-            }));
-            
-            // Apply sorting
-            sortedDebts.sort((a, b) => {
-                let aVal = a[state.debtSort.column];
-                let bVal = b[state.debtSort.column];
-                
-                if (state.debtSort.column === 'name') {
-                    aVal = aVal.toLowerCase();
-                    bVal = bVal.toLowerCase();
-                }
-                
-                if (state.debtSort.ascending) {
-                    return aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
-                } else {
-                    return aVal > bVal ? -1 : aVal < bVal ? 1 : 0;
-                }
-            });
-            
-            // Update sort indicators
-            ['name', 'balance', 'rate', 'minPayment', 'monthlyInterest'].forEach(col => {
-                const indicator = document.getElementById(`sort-${col}`);
-                if (indicator) {
-                    if (state.debtSort.column === col) {
-                        indicator.textContent = state.debtSort.ascending ? '↑' : '↓';
-                        indicator.style.opacity = '1';
-                    } else {
-                        indicator.textContent = '↕';
-                        indicator.style.opacity = '0.5';
-                    }
-                }
-            });
-            
-            // Get ordered debts for targeting
-            const orderedDebts = getOrderedDebts();
-            const targetDebtId = orderedDebts.length > 0 ? orderedDebts[0].id : null;
-            
-            sortedDebts.forEach((debt) => {
-                const monthlyInterest = debt.monthlyInterest;
-                const payoffDate = calculatePayoffDate(debt, debt.id === targetDebtId);
-                
-                const row = document.createElement('tr');
-                if (debt.id === targetDebtId) row.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                
-                row.innerHTML = `
-                    <td>${debt.name} ${debt.id === targetDebtId ? '🎯' : ''}</td>
-                    <td class="negative">${formatCurrency(debt.balance, true)}</td>
-                    <td class="warning">${(debt.rate * 100).toFixed(2)}%</td>
-                    <td>${formatCurrency(debt.minPayment)}</td>
-                    <td class="negative">${formatCurrency(monthlyInterest, true)}</td>
-                    <td>${payoffDate}</td>
-                    <td>
-                        <button onclick="removeDebt(${debt.id})" class="secondary" style="padding: 4px 12px; font-size: 0.9rem;">Remove</button>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-        
-        // Sort debts function
-        function sortDebts(column) {
-            if (state.debtSort.column === column) {
-                state.debtSort.ascending = !state.debtSort.ascending;
-            } else {
-                state.debtSort.column = column;
-                state.debtSort.ascending = true;
-            }
-            
-            updateDebtTable();
-        }
-        
-        function calculatePayoffDate(debt, isTarget) {
-            if (debt.balance === 0) return 'Paid Off';
-            
-            // Get average monthly payment for this debt
-            let monthlyPayment = debt.minPayment;
-            
-            if (isTarget && state.incomeHistory.length > 0) {
-                // Calculate average extra payment based on income history
-                const avgMonthlyIncome = state.incomeHistory.reduce((sum, e) => sum + e.amount, 0) / 
-                                       Math.max(1, getMonthsSpan());
-                const avgDebtPayment = avgMonthlyIncome * 0.3; // Assume 30% to debt
-                const totalMinPayments = state.debts.reduce((sum, d) => sum + d.minPayment, 0);
-                const extraPayment = Math.max(0, avgDebtPayment - totalMinPayments);
-                monthlyPayment += extraPayment;
-            }
-            
-            // For IRS debts, ensure minimum payment covers interest
-            if (debt.name.includes('IRS') && monthlyPayment < 500) {
-                monthlyPayment = 500; // Assume at least $500/month for IRS debts
-            }
-            
-            // Check if payment covers interest
-            const monthlyInterest = debt.balance * debt.rate / 12;
-            if (monthlyPayment <= monthlyInterest) {
-                return 'Never (payment too low)';
-            }
-            
-            // Calculate months to payoff
-            const r = debt.rate / 12;
-            let months;
-            
-            if (r === 0) {
-                months = debt.balance / monthlyPayment;
-            } else {
-                months = -Math.log(1 - (debt.balance * r) / monthlyPayment) / Math.log(1 + r);
-            }
-            
-            if (isNaN(months) || months < 0) {
-                return 'Error in calculation';
-            }
-            
-            // Cap at 60 months for realistic projections
-            if (months > 60 && !debt.name.includes('IRS')) {
-                months = 60;
-            }
-            
-            const payoffDate = new Date();
-            payoffDate.setMonth(payoffDate.getMonth() + Math.ceil(months));
-            
-            return payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        }
-        
-        function getMonthsSpan() {
-            try {
-                if (!Array.isArray(state.incomeHistory) || state.incomeHistory.length < 2) {
-                    return 1;
-                }
-                
-                // Filter for valid date entries
-                const validDates = state.incomeHistory
-                    .filter(e => e && e.date)
-                    .map(e => {
-                        try {
-                            return new Date(e.date);
-                        } catch (dateError) {
-                            console.warn('Invalid date in income entry:', e.date);
-                            return null;
-                        }
-                    })
-                    .filter(date => date && !isNaN(date.getTime()));
-                
-                if (validDates.length < 2) {
-                    return 1;
-                }
-                
-                const timestamps = validDates.map(d => d.getTime());
-                const oldest = Math.min(...timestamps);
-                const newest = Math.max(...timestamps);
-                
-                const months = (newest - oldest) / (1000 * 60 * 60 * 24 * 30);
-                const result = Math.max(1, months);
-                
-                return isNaN(result) ? 1 : result;
-                
-            } catch (error) {
-                console.error('Error calculating months span:', error);
-                return 1;
-            }
-        }
-        
-        function updatePayoffDates() {
-            // Calculate overall payoff date
-            if (state.debts.length === 0) {
-                document.getElementById('payoffDateHeader').textContent = 'Debt Free!';
-                return;
-            }
-            
-            // Simple projection based on current strategy
-            let totalMonths = 0;
-            let remainingDebts = state.debts.map(d => ({...d}));
-            let avgMonthlyPayment = getAverageMonthlyDebtPayment();
-            
-            // Ensure minimum payment for IRS debts
-            const irsDebts = remainingDebts.filter(d => d.name.includes('IRS'));
-            if (irsDebts.length > 0 && avgMonthlyPayment < 1500) {
-                avgMonthlyPayment = 1500; // Assume at least $1500/month total for all debts if IRS debts exist
-            }
-            
-            while (remainingDebts.length > 0 && totalMonths < 48) { // Cap at 4 years for realistic projection
-                totalMonths++;
-                
-                // Apply payments
-                let availablePayment = avgMonthlyPayment;
-                
-                // Pay minimums first
-                remainingDebts.forEach(debt => {
-                    if (debt.balance > 0) {
-                        const minPay = Math.min(debt.minPayment, debt.balance);
-                        debt.balance -= minPay;
-                        availablePayment -= minPay;
-                        
-                        // Add interest
-                        debt.balance += debt.balance * debt.rate / 12;
-                    }
-                });
-                
-                // Apply extra to target
-                const ordered = remainingDebts
-                    .filter(d => d.balance > 0)
-                    .sort((a, b) => {
-                        if (state.strategy === 'snowball') return a.balance - b.balance;
-                        return b.rate - a.rate;
-                    });
-                
-                if (ordered.length > 0 && availablePayment > 0) {
-                    ordered[0].balance = Math.max(0, ordered[0].balance - availablePayment);
-                }
-                
-                // Remove paid debts
-                remainingDebts = remainingDebts.filter(d => d.balance > 0);
-            }
-            
-            const payoffDate = new Date();
-            payoffDate.setMonth(payoffDate.getMonth() + totalMonths);
-            document.getElementById('payoffDateHeader').textContent = 
-                payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-        }
-        
-        function getAverageMonthlyDebtPayment() {
-            try {
-                if (!Array.isArray(state.incomeHistory) || state.incomeHistory.length === 0) {
-                    // Fallback to minimum payments if no income history
-                    if (Array.isArray(state.debts)) {
-                        return state.debts.reduce((sum, d) => sum + (d.minPayment || 0), 0);
-                    }
-                    return 0;
-                }
-                
-                // Calculate total debt payments from valid income entries
-                const totalDebtPayments = state.incomeHistory
-                    .filter(e => e && typeof e.debt === 'number' && !isNaN(e.debt))
-                    .reduce((sum, e) => sum + e.debt, 0);
-                
-                const months = Math.max(1, getMonthsSpan());
-                
-                const avgPayment = totalDebtPayments / months;
-                
-                // Ensure we return a valid number
-                return isNaN(avgPayment) ? 0 : avgPayment;
-                
-            } catch (error) {
-                console.error('Error calculating average monthly debt payment:', error);
-                // Return minimum payments as fallback
-                if (Array.isArray(state.debts)) {
-                    return state.debts.reduce((sum, d) => sum + (d.minPayment || 0), 0);
-                }
-                return 0;
-            }
-        }
-        
-        // Charts
-        function initCharts() {
-            try {
-                // Check if Chart.js is loaded
-                if (typeof Chart === 'undefined') {
-                    console.warn('Chart.js library not loaded, retrying in 500ms...');
-                    setTimeout(initCharts, 500);
-                    return;
-                }
-                
-                const payoffCanvas = document.getElementById('payoffChart');
-                if (!payoffCanvas) {
-                    console.warn('Payoff chart canvas not found - this is normal if not on the Debts tab');
-                    return;
-                }
-                
-                const payoffCtx = payoffCanvas.getContext('2d');
-                if (!payoffCtx) {
-                    console.warn('Could not get 2D context for payoff chart');
-                    return;
-                }
-                
-                // Destroy existing chart if it exists
-                if (payoffChart && typeof payoffChart.destroy === 'function') {
-                    try {
-                        payoffChart.destroy();
-                        payoffChart = null;
-                    } catch (destroyError) {
-                        console.warn('Error destroying existing chart:', destroyError);
-                    }
-                }
-                
-                // Create new chart
-                try {
-                    payoffChart = new Chart(payoffCtx, {
-                        type: 'line',
-                        data: {
-                            labels: [],
-                            datasets: [{
-                                label: 'Total Debt',
-                                data: [],
-                                borderColor: '#3b82f6',
-                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                tension: 0.4
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        callback: function(value) {
-                                            try {
-                                                return formatCurrency(value);
-                                            } catch (error) {
-                                                return '$' + value;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    
-                    chartInitialized = true;
-                    console.log('Payoff chart initialized successfully');
-                    
-                    // Initial update after successful initialization
-                    setTimeout(() => {
-                        if (chartInitialized && payoffChart) {
-                            updateCharts();
-                        }
-                    }, 100);
-                    
-                } catch (chartError) {
-                    console.error('Error creating chart:', chartError);
-                    payoffChart = null;
-                    chartInitialized = false;
-                }
-                
-            } catch (error) {
-                console.error('Error initializing charts:', error);
-                payoffChart = null;
-                chartInitialized = false;
-            }
-        }
-        
-        function updateCharts() {
-            try {
-                // Skip if chart is not initialized
-                if (!chartInitialized || !payoffChart) {
-                    console.log('Chart not yet initialized, skipping update');
-                    return;
-                }
-                
-                // Check if chart exists and is properly initialized
-                if (!payoffChart.data || !payoffChart.data.datasets || !payoffChart.data.datasets[0]) {
-                    console.warn('Payoff chart structure is invalid, reinitializing...');
-                    chartInitialized = false;
-                    initCharts();
-                    return;
-                }
-                
-                // Validate income data before processing
-                if (!Array.isArray(state.incomeHistory)) {
-                    console.warn('Income history is not an array, skipping chart update');
-                    return;
-                }
-                
-                // Log current income data for debugging
-                console.log('Current income history for chart update:', {
-                    count: state.incomeHistory.length,
-                    entries: state.incomeHistory.map(entry => ({
-                        id: entry.id,
-                        type: entry.type,
-                        amount: entry.amount,
-                        hasType: entry.hasOwnProperty('type'),
-                        typeIsUndefined: entry.type === undefined
-                    }))
-                });
-                
-                // Update payoff projection with error handling
-                const months = 24;
-                const labels = [];
-                const data = [];
-                
-                // Validate debt data
-                if (!Array.isArray(state.debts)) {
-                    console.warn('Debts array is invalid, using empty array');
-                    state.debts = [];
-                }
-                
-                let projectedDebts = state.debts.map(d => ({
-                    ...d,
-                    balance: d.balance || 0,
-                    rate: d.rate || 0,
-                    minPayment: d.minPayment || 0
-                }));
-                
-                let totalBalance = projectedDebts.reduce((sum, d) => sum + (d.balance || 0), 0);
-                const monthlyPayment = getAverageMonthlyDebtPayment() || 0;
-                
-                for (let i = 0; i <= months; i++) {
-                    try {
-                        const date = new Date();
-                        date.setMonth(date.getMonth() + i);
-                        labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
-                        data.push(totalBalance);
-                        
-                        if (i < months && totalBalance > 0 && projectedDebts.length > 0) {
-                            // Apply projected payments
-                            let payment = monthlyPayment;
-                            
-                            // Simple allocation with error handling
-                            projectedDebts.forEach(debt => {
-                                try {
-                                    if (debt && debt.balance > 0) {
-                                        const interest = (debt.balance || 0) * (debt.rate || 0) / 12;
-                                        const allocated = Math.min(payment / Math.max(1, projectedDebts.length), debt.balance + interest);
-                                        debt.balance = Math.max(0, debt.balance + interest - allocated);
-                                        payment = Math.max(0, payment - allocated);
-                                    }
-                                } catch (debtError) {
-                                    console.warn('Error processing debt in chart calculation:', debtError, debt);
-                                }
-                            });
-                            
-                            totalBalance = projectedDebts.reduce((sum, d) => sum + (d.balance || 0), 0);
-                        }
-                    } catch (monthError) {
-                        console.warn('Error calculating month', i, monthError);
-                        // Use previous month's data
-                        labels.push(`Month ${i}`);
-                        data.push(data[data.length - 1] || 0);
-                    }
-                }
-                
-                // Safely update chart data
-                if (payoffChart && payoffChart.data) {
-                    if (payoffChart.data.labels) {
-                        payoffChart.data.labels = labels;
-                    }
-                    
-                    if (payoffChart.data.datasets && payoffChart.data.datasets[0] && payoffChart.data.datasets[0].hasOwnProperty('data')) {
-                        payoffChart.data.datasets[0].data = data;
-                    }
-                    
-                    // Update chart with error handling
-                    if (typeof payoffChart.update === 'function') {
-                        payoffChart.update();
-                        console.log('Chart updated successfully with', data.length, 'data points');
-                    } else {
-                        console.warn('Chart update function not available');
-                    }
-                } else {
-                    console.warn('Chart data structure invalid, cannot update');
-                }
-                
-            } catch (error) {
-                console.error('Error in updateCharts:', error);
-                
-                // Only log detailed state if chart was supposed to be initialized
-                if (chartInitialized) {
-                    console.error('Chart state:', {
-                        chartExists: !!payoffChart,
-                        chartHasData: !!(payoffChart && payoffChart.data),
-                        chartHasDatasets: !!(payoffChart && payoffChart.data && payoffChart.data.datasets),
-                        chartHasFirstDataset: !!(payoffChart && payoffChart.data && payoffChart.data.datasets && payoffChart.data.datasets[0])
-                    });
-                    
-                    // Mark chart as not initialized so it can be reinitialized
-                    chartInitialized = false;
-                }
-            }
-        }
-        
-        // Tax Goal Management
-        function editTaxGoal() {
-            // Set the combined Q1+Q2 goal (default to 2 x $9,566 = $19,132)
-            const combinedGoal = state.quarterlyTaxGoal * 2 || 19132;
-            document.getElementById('taxGoalInput').value = combinedGoal;
-            document.getElementById('editTaxModal').style.display = 'block';
-        }
-        
-        function saveTaxGoal(event) {
-            event.preventDefault();
-            // Save half of the combined goal as the quarterly goal
-            const combinedGoal = parseFloat(document.getElementById('taxGoalInput').value);
-            state.quarterlyTaxGoal = combinedGoal / 2;
-            saveState();
-            updateTaxStatus();
-            closeModal('editTaxModal');
-        }
-        
-        // Debt Management
-        function setDebtStrategy(strategy) {
-            state.strategy = strategy;
-            document.getElementById('snowballBtn').className = strategy === 'snowball' ? '' : 'secondary';
-            document.getElementById('avalancheBtn').className = strategy === 'avalanche' ? '' : 'secondary';
-            saveState();
-            updateAllCalculations();
-        }
-        
-        function showAddDebt() {
-            document.getElementById('addDebtModal').style.display = 'block';
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-        
-        function addDebt(event) {
-            event.preventDefault();
-            
-            const debt = {
-                id: Date.now(),
-                name: document.getElementById('debtName').value,
-                balance: parseFloat(document.getElementById('debtBalance').value),
-                rate: parseFloat(document.getElementById('debtRate').value) / 100,
-                minPayment: parseFloat(document.getElementById('debtMinPayment').value),
-                originalBalance: parseFloat(document.getElementById('debtBalance').value)
-            };
-            
-            state.debts.push(debt);
-            saveState();
-            updateAllCalculations();
-            closeModal('addDebtModal');
-            
-            // Reset form
-            event.target.reset();
-        }
-        
-        function removeDebt(id) {
-            if (confirm('Remove this debt?')) {
-                state.debts = state.debts.filter(d => d.id !== id);
-                saveState();
-                updateAllCalculations();
-            }
-        }
-        
-        // Data Management
-        function confirmReset() {
-            if (confirm('This will delete ALL income history. This cannot be undone. Continue?')) {
-                if (confirm('Are you absolutely sure? All income entries will be permanently deleted.')) {
-                    state.incomeHistory = [];
-                    state.quarterlyPaid = 0;
-                    saveState();
-                    updateAllCalculations();
-                    alert('Income history has been reset.');
-                }
-            }
-        }
-        
-        function exportData() {
-            const dataStr = JSON.stringify(state, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const link = document.createElement('a');
-            link.setAttribute('href', dataUri);
-            link.setAttribute('download', `financial_data_${new Date().toISOString().split('T')[0]}.json`);
-            link.click();
-        }
-        
-        function exportIncomeData() {
-            try {
-                const headers = ['Date', 'Amount', 'Type', 'Tithe', 'Tax', 'Debt', 'Flexible', 'Notes'];
-                const rows = state.incomeHistory
-                    .filter(entry => entry && typeof entry.amount === 'number') // Only export valid entries
-                    .map(entry => [
-                        new Date(entry.date || new Date()).toLocaleDateString(),
-                        entry.amount || 0,
-                        getIncomeTypeLabel(entry.type),
-                        entry.tithe || 0,
-                        entry.tax || 0,
-                        entry.debt || 0,
-                        entry.flexible || 0,
-                        entry.notes || ''
-                    ]);
-                
-                const csvContent = [headers, ...rows]
-                    .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
-                    .join('\n');
-                
-                const blob = new Blob([csvContent], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.setAttribute('href', url);
-                link.setAttribute('download', `income_history_${new Date().toISOString().split('T')[0]}.csv`);
-                link.click();
-                
-                // Clean up the URL object
-                setTimeout(() => window.URL.revokeObjectURL(url), 100);
-                
-            } catch (error) {
-                console.error('Error exporting income data:', error);
-                alert('Error exporting data. Please check the console for details.');
-            }
-        }
-        
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = event => {
-                    try {
-                        const imported = JSON.parse(event.target.result);
-                        Object.assign(state, imported);
-                        saveState();
-                        updateAllCalculations();
-                        alert('Data imported successfully!');
-                    } catch (error) {
-                        alert('Error importing data. Please check the file format.');
-                    }
-                };
-                
-                reader.readAsText(file);
-            };
-            
-            input.click();
-        }
-        
-        // Success Animation
-        function showSuccessAnimation() {
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                card.classList.add('milestone-reached');
-                setTimeout(() => card.classList.remove('milestone-reached'), 500);
-            });
-        }
-        
-        // Quarterly Taxes Update
-        function updateQuarterlyTaxes() {
-            // Define quarters with their due dates and goals
-            const quarters = [
-                { name: 'Q1 2025', dueDate: new Date('2025-04-15'), goal: 9566, months: ['Jan', 'Feb', 'Mar'] },
-                { name: 'Q2 2025', dueDate: new Date('2025-06-16'), goal: 9566, months: ['Apr', 'May', 'Jun'] },
-                { name: 'Q3 2025', dueDate: new Date('2025-09-15'), goal: 9566, months: ['Jul', 'Aug', 'Sep'] },
-                { name: 'Q4 2025', dueDate: new Date('2026-01-15'), goal: 9566, months: ['Oct', 'Nov', 'Dec'] }
-            ];
-            
-            const today = new Date();
-            const quarterlyBreakdown = document.getElementById('quarterlyBreakdown');
-            
-            if (!quarterlyBreakdown) return;
-            
-            quarterlyBreakdown.innerHTML = '';
-            
-            // Calculate 1099 income by quarter
-            const incomeByQuarter = {};
-            const taxByQuarter = {};
-            const paymentsByQuarter = {};
-            
-            // Initialize quarters
-            quarters.forEach(q => {
-                incomeByQuarter[q.name] = 0;
-                taxByQuarter[q.name] = 0;
-                paymentsByQuarter[q.name] = 0;
-            });
-            
-            // Process 1099 income
-            state.incomeHistory.forEach(entry => {
-                if (entry && (entry.type === 'commission' || entry.type === 'override' || entry.type === 'other-1099')) {
-                    const date = new Date(entry.date);
-                    const month = date.getMonth();
-                    let quarter;
-                    
-                    if (month < 3) quarter = 'Q1 2025';
-                    else if (month < 6) quarter = 'Q2 2025';
-                    else if (month < 9) quarter = 'Q3 2025';
-                    else quarter = 'Q4 2025';
-                    
-                    incomeByQuarter[quarter] += entry.amount || 0;
-                    taxByQuarter[quarter] += entry.tax || 0;
-                }
-            });
-            
-            // Process tax payments
-            state.paymentHistory.forEach(payment => {
-                if (payment && payment.type === 'tax') {
-                    paymentsByQuarter[payment.account] = (paymentsByQuarter[payment.account] || 0) + payment.amount;
-                }
-            });
-            
-            // Create quarter cards
-            quarters.forEach(quarter => {
-                const card = document.createElement('div');
-                card.className = 'quarter-card';
-                
-                const daysUntilDue = Math.ceil((quarter.dueDate - today) / (1000 * 60 * 60 * 24));
-                const taxReserved = taxByQuarter[quarter.name];
-                const taxPaid = paymentsByQuarter[quarter.name];
-                const quarterGoal = quarter.goal;
-                const taxOwed = Math.min(taxReserved, quarterGoal);
-                const taxDue = Math.max(0, taxOwed - taxPaid);
-                const progressPercent = quarterGoal > 0 ? (taxPaid / quarterGoal) * 100 : 0;
-                
-                // Determine status
-                let status = '';
-                let statusClass = '';
-                
-                if (taxPaid >= taxReserved && taxReserved > 0) {
-                    status = 'Paid';
-                    statusClass = 'paid';
-                } else if (daysUntilDue < 0) {
-                    status = 'Overdue';
-                    statusClass = 'overdue';
-                    card.classList.add('overdue');
-                } else if (daysUntilDue < 30) {
-                    status = 'Due Soon';
-                    statusClass = 'due';
-                    card.classList.add('current');
-                } else {
-                    // For future quarters with no income yet
-                    if (taxReserved === 0) {
-                        status = 'Not Due';
-                        statusClass = '';
-                    } else {
-                        status = 'Upcoming';
-                        statusClass = '';
-                    }
-                }
-                
-                card.innerHTML = `
-                    <h3>${quarter.name}</h3>
-                    <div class="quarter-status ${statusClass}">${status}</div>
-                    <div class="quarter-details">
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">Goal:</span>
-                            <span>${formatCurrency(quarterGoal)} (${progressPercent.toFixed(0)}%)</span>
-                        </div>
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">1099 Income:</span>
-                            <span class="positive">${formatCurrency(incomeByQuarter[quarter.name])}</span>
-                        </div>
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">Tax Reserved:</span>
-                            <span>${formatCurrency(taxReserved)}</span>
-                        </div>
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">Tax Paid:</span>
-                            <span class="${taxPaid > 0 ? 'positive' : ''}">${formatCurrency(taxPaid)}</span>
-                        </div>
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">Balance Due:</span>
-                            <span class="${taxDue > 0 ? 'negative' : 'positive'}">${formatCurrency(Math.abs(taxDue))}</span>
-                        </div>
-                        <div class="quarter-detail">
-                            <span class="quarter-detail-label">Due Date:</span>
-                            <span>${quarter.dueDate.toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    <div class="progress-bar" style="margin-top: 12px;">
-                        <div class="progress-fill ${progressPercent >= 100 ? '' : 'danger'}" style="width: ${Math.min(100, progressPercent)}%"></div>
-                    </div>
-                    ${taxDue > 0 ? `
-                        <button onclick="quickPayTax('${quarter.name}', ${taxDue})" style="width: 100%; margin-top: 12px;">
-                            Pay ${formatCurrency(taxDue)}
-                        </button>
-                    ` : ''}
-                `;
-                
-                quarterlyBreakdown.appendChild(card);
-            });
-            
-            // Update 1099 income breakdown table
-            const taxIncomeBreakdown = document.getElementById('taxIncomeBreakdown');
-            if (taxIncomeBreakdown) {
-                taxIncomeBreakdown.innerHTML = '';
-                
-                const incomeTypes = {
-                    'commission': { label: 'Commission (1099)', total: 0, tax: 0, count: 0 },
-                    'override': { label: 'Override (1099)', total: 0, tax: 0, count: 0 },
-                    'other-1099': { label: 'Other (1099)', total: 0, tax: 0, count: 0 }
-                };
-                
-                state.incomeHistory.forEach(entry => {
-                    if (entry && incomeTypes[entry.type]) {
-                        incomeTypes[entry.type].total += entry.amount || 0;
-                        incomeTypes[entry.type].tax += entry.tax || 0;
-                        incomeTypes[entry.type].count++;
-                    }
-                });
-                
-                Object.entries(incomeTypes).forEach(([type, data]) => {
-                    if (data.count > 0) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${data.label}</td>
-                            <td class="positive">${formatCurrency(data.total)}</td>
-                            <td>${formatCurrency(data.tax)}</td>
-                            <td>${data.count}</td>
-                        `;
-                        taxIncomeBreakdown.appendChild(row);
-                    }
-                });
-                
-                // Add total row
-                const totalRow = document.createElement('tr');
-                totalRow.style.fontWeight = '600';
-                totalRow.style.borderTop = '2px solid var(--border)';
-                const totals = Object.values(incomeTypes).reduce((acc, type) => ({
-                    total: acc.total + type.total,
-                    tax: acc.tax + type.tax,
-                    count: acc.count + type.count
-                }), { total: 0, tax: 0, count: 0 });
-                
-                totalRow.innerHTML = `
-                    <td>Total 1099 Income</td>
-                    <td class="positive">${formatCurrency(totals.total)}</td>
-                    <td>${formatCurrency(totals.tax)}</td>
-                    <td>${totals.count}</td>
-                `;
-                taxIncomeBreakdown.appendChild(totalRow);
-            }
-            
-            // Update tax payment history
-            const taxPaymentHistory = document.getElementById('taxPaymentHistory');
-            if (taxPaymentHistory) {
-                taxPaymentHistory.innerHTML = '';
-                
-                const taxPayments = state.paymentHistory.filter(p => p.type === 'tax');
-                taxPayments.forEach(payment => {
-                    const row = document.createElement('tr');
-                    const date = new Date(payment.date);
-                    
-                    row.innerHTML = `
-                        <td>${date.toLocaleDateString()}</td>
-                        <td>${payment.account}</td>
-                        <td class="positive">${formatCurrency(payment.amount)}</td>
-                        <td>${payment.notes || '-'}</td>
-                        <td>
-                            <button onclick="editPayment(${payment.id})" class="edit-btn">✏️</button>
-                            <button onclick="deletePayment(${payment.id})" class="delete-btn">🗑️</button>
-                        </td>
-                    `;
-                    taxPaymentHistory.appendChild(row);
-                });
-            }
-        }
-        
-        // Quick pay tax function
-        function quickPayTax(quarter, amount) {
-            document.getElementById('taxPaymentAmount').value = amount.toFixed(2);
-            document.getElementById('taxPaymentQuarter').value = quarter;
-            document.getElementById('taxPaymentNotes').value = `Quarterly estimated tax payment`;
-            
-            // Switch to manual payments tab
-            switchTab('payments');
-            
-            // Scroll to tax payment form
-            const taxCard = document.querySelector('.payment-card:last-child');
-            if (taxCard) {
-                taxCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                taxCard.style.animation = 'pulse 0.5s ease 2';
-            }
-        }
-        window.onload = function() {
-            // Wait for Chart.js to load
-            let chartLoadAttempts = 0;
-            const maxAttempts = 10;
-            
-            function checkAndInit() {
-                chartLoadAttempts++;
-                
-                if (typeof Chart !== 'undefined') {
-                    console.log('Chart.js loaded, initializing app...');
-                    init();
-                } else if (chartLoadAttempts < maxAttempts) {
-                    console.log(`Waiting for Chart.js to load... (attempt ${chartLoadAttempts}/${maxAttempts})`);
-                    setTimeout(checkAndInit, 200);
-                } else {
-                    console.warn('Chart.js failed to load after multiple attempts. Initializing without charts...');
-                    init();
-                }
-            }
-            
-            checkAndInit();
-        };
-        
-        // Debug function to test chart with problematic data
-        window.testChartWithProblematicData = function() {
-            console.log('Testing chart with problematic income data...');
-            
-            // Add some test entries with problematic data
-            const testEntries = [
-                {
-                    id: Date.now() + 1,
-                    date: new Date().toISOString(),
-                    amount: 1000,
-                    type: undefined, // This should not break charts
-                    tithe: 100,
-                    tax: 229,
-                    debt: 300,
-                    flexible: 371,
-                    splits: { tithe: 10, tax: 22.9, debt: 30, flexible: 37.1 }
-                },
-                {
-                    id: Date.now() + 2,
-                    date: new Date().toISOString(),
-                    amount: 2000,
-                    type: null, // This should not break charts
-                    tithe: 200,
-                    tax: 458,
-                    debt: 600,
-                    flexible: 742,
-                    splits: { tithe: 10, tax: 22.9, debt: 30, flexible: 37.1 }
-                },
-                {
-                    id: Date.now() + 3,
-                    date: new Date().toISOString(),
-                    amount: 1500,
-                    // Missing type property entirely
-                    tithe: 150,
-                    tax: 343.5,
-                    debt: 450,
-                    flexible: 556.5,
-                    splits: { tithe: 10, tax: 22.9, debt: 30, flexible: 37.1 }
-                }
-            ];
-            
-            // Add test entries to state
-            testEntries.forEach(entry => state.incomeHistory.unshift(entry));
-            
-            console.log('Added test entries with problematic types:', testEntries);
-            
-            // Try to update everything
-            try {
-                updateAllCalculations();
-                console.log('✅ All calculations updated successfully with problematic data');
-            } catch (error) {
-                console.error('❌ Error updating with problematic data:', error);
-            }
-            
-            // Clean up test data
-            setTimeout(() => {
-                state.incomeHistory = state.incomeHistory.filter(e => 
-                    !testEntries.some(te => te.id === e.id)
-                );
-                updateAllCalculations();
-                console.log('Test data cleaned up');
-            }, 5000);
-        };
-        
-        // Close modals on outside click
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        }
-    </script>
-</body>
-</html>
+            const avgMonthlyIncome = state.incomeHistory.length > 0 ? 
+                totalIncome / Math.max
