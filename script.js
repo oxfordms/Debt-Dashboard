@@ -1,4 +1,4 @@
-// Financial Command Center v2025.06.18.3
+// Financial Command Center v2025.06.18.5
 // State Management
 const state = {
     debts: [
@@ -135,6 +135,12 @@ function init() {
             document.getElementById(id).addEventListener('input', updateEditFlexible);
         });
         
+        // Set up edit modal override checkbox listener
+        document.getElementById('editOverrideDebtReduction').addEventListener('change', function() {
+            document.getElementById('editOverrideReasonGroup').style.display = 
+                this.checked ? 'block' : 'none';
+        });
+        
         // Set today's date for payment forms
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('debtPaymentDate').value = today;
@@ -175,6 +181,19 @@ function init() {
             console.error('Critical error - unable to initialize:', secondaryError);
             alert('Critical error loading the application. Please refresh the page.');
         }
+    }
+}
+
+// Toggle override reason field
+function toggleOverrideReason() {
+    const checkbox = document.getElementById('overrideDebtReduction');
+    const controls = document.getElementById('overrideControls');
+    
+    if (checkbox.checked) {
+        controls.classList.add('active');
+    } else {
+        controls.classList.remove('active');
+        document.getElementById('overrideReason').value = '';
     }
 }
 
@@ -363,6 +382,14 @@ function cleanupIncomeData() {
             entry.id = Date.now() + Math.random();
         }
         
+        // Initialize override fields if missing
+        if (entry.overrideDebtReduction === undefined) {
+            entry.overrideDebtReduction = false;
+        }
+        if (entry.overrideReason === undefined) {
+            entry.overrideReason = '';
+        }
+        
         return true;
     });
     
@@ -482,6 +509,7 @@ function updateActivityLog() {
             if (entry.type === 'Income' && entry.details.type) {
                 detailParts.push(`Type: ${getIncomeTypeLabel(entry.details.type)}`);
                 if (entry.details.notes) detailParts.push(`Notes: ${entry.details.notes}`);
+                if (entry.details.overrideDebtReduction) detailParts.push(`Override: ${entry.details.overrideReason || 'Yes'}`);
             } else if (entry.type === 'Payment' && entry.details.account) {
                 detailParts.push(`Account: ${entry.details.account}`);
                 if (entry.details.remainingBalance !== undefined) {
@@ -587,8 +615,16 @@ function recordIncome(event) {
     const notes = document.getElementById('incomeNotes').value;
     const useDefault = document.getElementById('useDefaultSplit').checked;
     const deferTax = document.getElementById('deferTaxReserve').checked;
+    const overrideDebtReduction = document.getElementById('overrideDebtReduction').checked;
+    const overrideReason = document.getElementById('overrideReason').value;
     
     if (!income || income <= 0) return;
+    
+    // Validate override reason if override is checked
+    if (overrideDebtReduction && !overrideReason.trim()) {
+        alert('Please provide a reason for overriding debt reduction');
+        return;
+    }
     
     // Get splits
     let splits;
@@ -641,7 +677,9 @@ function recordIncome(event) {
         flexible,
         type,
         notes,
-        splits
+        splits,
+        overrideDebtReduction,
+        overrideReason
     };
     
     state.incomeHistory.unshift(entry); // Add to beginning
@@ -649,25 +687,32 @@ function recordIncome(event) {
     // Log activity
     logActivity(
         'Income',
-        `${getIncomeTypeLabel(type)} income recorded`,
+        `${getIncomeTypeLabel(type)} income recorded${overrideDebtReduction ? ' (debt override)' : ''}`,
         income,
         'User',
         {
             type,
             splits: `Tithe: ${splits.tithe}%, Tax: ${splits.tax}%, Debt: ${splits.debt}%, Flexible: ${splits.flexible}%`,
-            notes
+            notes,
+            overrideDebtReduction,
+            overrideReason
         }
     );
     
-    // Apply debt payment
-    applyDebtPayment(debt);
+    // Apply debt payment only if not overridden
+    if (!overrideDebtReduction) {
+        applyDebtPayment(debt);
+    }
     
     // Clear form
     document.getElementById('overrideIncome').value = '';
     document.getElementById('incomeNotes').value = '';
     document.getElementById('useDefaultSplit').checked = true;
     document.getElementById('deferTaxReserve').checked = false;
+    document.getElementById('overrideDebtReduction').checked = false;
+    document.getElementById('overrideReason').value = '';
     document.getElementById('customSplitEditor').style.display = 'none';
+    document.getElementById('overrideControls').classList.remove('active');
     
     // Show success animation
     showSuccessAnimation();
@@ -691,6 +736,12 @@ function editIncome(id) {
     document.getElementById('editTax').value = entry.splits.tax;
     document.getElementById('editDebt').value = entry.splits.debt;
     document.getElementById('editFlexible').value = entry.splits.flexible;
+    document.getElementById('editOverrideDebtReduction').checked = entry.overrideDebtReduction || false;
+    document.getElementById('editOverrideReason').value = entry.overrideReason || '';
+    
+    // Show/hide override reason field
+    document.getElementById('editOverrideReasonGroup').style.display = 
+        entry.overrideDebtReduction ? 'block' : 'none';
     
     document.getElementById('editIncomeModal').style.display = 'block';
 }
@@ -710,6 +761,14 @@ function saveIncomeEdit(event) {
     const newAmount = parseFloat(document.getElementById('editIncomeAmount').value);
     const newType = document.getElementById('editIncomeType').value || 'other';
     const newNotes = document.getElementById('editIncomeNotes').value;
+    const newOverrideDebtReduction = document.getElementById('editOverrideDebtReduction').checked;
+    const newOverrideReason = document.getElementById('editOverrideReason').value;
+    
+    // Validate override reason if override is checked
+    if (newOverrideDebtReduction && !newOverrideReason.trim()) {
+        alert('Please provide a reason for overriding debt reduction');
+        return;
+    }
     
     const newSplits = {
         tithe: parseFloat(document.getElementById('editTithe').value),
@@ -743,6 +802,8 @@ function saveIncomeEdit(event) {
     entry.debt = newDebt;
     entry.flexible = newFlexible;
     entry.splits = newSplits;
+    entry.overrideDebtReduction = newOverrideDebtReduction;
+    entry.overrideReason = newOverrideReason;
     
     // Log activity
     logActivity(
@@ -753,7 +814,9 @@ function saveIncomeEdit(event) {
         {
             oldAmount: entry.amount,
             type: newType,
-            notes: newNotes
+            notes: newNotes,
+            overrideDebtReduction: newOverrideDebtReduction,
+            overrideReason: newOverrideReason
         }
     );
     
@@ -985,9 +1048,13 @@ function updateIncomeLedger() {
             const safeNotes = entry.notes || '';
             const netAfterSplit = entry.flexible || 0;
             
+            // Create override badge if needed
+            const overrideBadge = entry.overrideDebtReduction ? 
+                `<span class="override-badge" title="${entry.overrideReason || 'Manual debt payment'}">🚫 Override</span>` : '';
+            
             row.innerHTML = `
                 <td>${date.toLocaleDateString()}</td>
-                <td class="positive">${formatCurrency(entry.amount)}</td>
+                <td class="positive">${formatCurrency(entry.amount)}${overrideBadge}</td>
                 <td>${formatCurrency(entry.tithe || 0)} (${(splits.tithe || 0).toFixed(1)}%)</td>
                 <td>${formatCurrency(entry.tax || 0)} (${(splits.tax || 0).toFixed(1)}%)</td>
                 <td>${formatCurrency(entry.debt || 0)} (${(splits.debt || 0).toFixed(1)}%)</td>
@@ -1024,12 +1091,14 @@ function deleteIncome(id) {
             // Log activity
             logActivity(
                 'Delete',
-                `${getIncomeTypeLabel(entry.type)} income entry removed`,
+                `${getIncomeTypeLabel(entry.type)} income entry removed${entry.overrideDebtReduction ? ' (was override)' : ''}`,
                 entry.amount,
                 'User',
                 {
                     type: getIncomeTypeLabel(entry.type),
-                    date: new Date(entry.date).toLocaleDateString()
+                    date: new Date(entry.date).toLocaleDateString(),
+                    overrideDebtReduction: entry.overrideDebtReduction,
+                    overrideReason: entry.overrideReason
                 }
             );
             
@@ -1685,12 +1754,16 @@ function getOrderedDebts() {
     });
 }
 
-// Get average monthly debt payment
+// Get average monthly debt payment (excluding overrides)
 function getAverageMonthlyDebtPayment() {
     if (state.incomeHistory.length === 0) return 0;
     
-    const totalDebtPayments = state.incomeHistory.reduce((sum, e) => sum + (e.debt || 0), 0);
-    const months = Math.max(1, state.incomeHistory.length / 4); // Assume 4 income entries per month
+    // Only count entries where debt reduction wasn't overridden
+    const nonOverriddenEntries = state.incomeHistory.filter(e => !e.overrideDebtReduction);
+    if (nonOverriddenEntries.length === 0) return 0;
+    
+    const totalDebtPayments = nonOverriddenEntries.reduce((sum, e) => sum + (e.debt || 0), 0);
+    const months = Math.max(1, nonOverriddenEntries.length / 4); // Assume 4 income entries per month
     
     return totalDebtPayments / months;
 }
@@ -1795,6 +1868,11 @@ function updateMacroSummary() {
     
     const avgMonthlyIncome = calculateAverageMonthlyIncome();
     
+    // Calculate excluded amounts
+    const excludedEntries = state.incomeHistory.filter(e => e.overrideDebtReduction);
+    const totalExcluded = excludedEntries.reduce((sum, e) => sum + (e.debt || 0), 0);
+    const excludedCount = excludedEntries.length;
+    
     // Calculate months to debt free using consistent method
     const timeline = calculatePayoffTimeline(0, null);
     const monthsToFreedom = timeline.months;
@@ -1826,6 +1904,11 @@ function updateMacroSummary() {
         summaryHTML += `your net payoff rate is <span style="color: var(--accent-positive);">${formatCurrency(netPayoffRate)}/month</span>.</p>`;
     } else {
         summaryHTML += `you need to increase payments to make progress on principal.</p>`;
+    }
+    
+    // Add exclusion information if applicable
+    if (excludedCount > 0) {
+        summaryHTML += `<p><span class="exclusion-badge">🚫 Exclusions:</span> ${excludedCount} income ${excludedCount === 1 ? 'entry' : 'entries'} totaling <span style="color: var(--accent-warning);">${formatCurrency(totalExcluded)}</span> in debt allocation excluded from automatic debt reduction.</p>`;
     }
     
     // Calculate what-if scenario
@@ -2549,170 +2632,4 @@ function closeModal(modalId) {
 
 function confirmReset() {
     if (confirm('Reset all income history? This cannot be undone and will reset your tax tracking.')) {
-        const totalEntries = state.incomeHistory.length;
-        const totalAmount = state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0);
-        
-        state.incomeHistory = [];
-        state.quarterlyPaid = 0;
-        state.totalInterestPaid = 0;
-        
-        // Reset debts to original balances if available
-        state.debts.forEach(debt => {
-            if (debt.originalBalance) {
-                debt.balance = debt.originalBalance;
-            }
-        });
-        
-        logActivity(
-            'Reset',
-            `All income history cleared (${totalEntries} entries totaling ${formatCurrency(totalAmount)})`,
-            totalAmount,
-            'User',
-            {
-                entriesCleared: totalEntries,
-                totalAmountCleared: formatCurrency(totalAmount)
-            }
-        );
-        
-        saveState();
-        updateAllCalculations();
-    }
-}
-
-// Reset All Data function
-function resetAllData() {
-    document.getElementById('resetDataModal').style.display = 'block';
-}
-
-function performResetAllData() {
-    // Reset to defaults
-    state.debts = [
-        { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58, originalBalance: 10066 },
-        { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58, originalBalance: 13153 },
-        { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84, originalBalance: 33814 },
-        { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 }
-    ];
-    state.quarterlyTaxGoal = 9566;
-    state.quarterlyPaid = 0;
-    state.strategy = 'snowball';
-    state.defaultSplits = {
-        tithe: 10,
-        tax: 22.9,
-        debt: 30,
-        flexible: 37.1
-    };
-    state.pauseTaxReserve = false;
-    state.thresholds = {
-        usePercentage: false,
-        interestWarning: 500,
-        interestBad: 800
-    };
-    state.irsOverrides = {
-        'Q1 2025': null,
-        'Q2 2025': null,
-        'Q3 2025': null,
-        'Q4 2025': null
-    };
-    state.incomeHistory = [];
-    state.paymentHistory = [];
-    state.activityLog = [];
-    state.totalInterestPaid = 0;
-    
-    // Log the reset action
-    logActivity(
-        'Reset',
-        'User reset all data to default via Fresh Start',
-        null,
-        'User',
-        {
-            action: 'Complete data reset'
-        }
-    );
-    
-    closeModal('resetDataModal');
-    saveState();
-    location.reload(); // Reload to reinitialize everything
-}
-
-// Export Functions
-function exportIncomeData() {
-    const headers = ['Date', 'Amount', 'Tithe', 'Tax', 'Debt', 'Flexible', 'Type', 'Notes'];
-    const rows = state.incomeHistory.map(entry => [
-        new Date(entry.date).toLocaleDateString(),
-        entry.amount,
-        entry.tithe,
-        entry.tax,
-        entry.debt,
-        entry.flexible,
-        getIncomeTypeLabel(entry.type),
-        entry.notes || ''
-    ]);
-    
-    const csvContent = [headers, ...rows]
-        .map(row => row.map(field => `"${field}"`).join(','))
-        .join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `income_history_${new Date().toISOString().split('T')[0]}.csv`);
-    link.click();
-    
-    setTimeout(() => window.URL.revokeObjectURL(url), 100);
-}
-
-function exportData() {
-    const data = JSON.stringify(state, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `financial_data_${new Date().toISOString().split('T')[0]}.json`);
-    link.click();
-    
-    setTimeout(() => window.URL.revokeObjectURL(url), 100);
-}
-
-function importData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                
-                // Validate basic structure
-                if (!imported.debts || !Array.isArray(imported.debts)) {
-                    throw new Error('Invalid data format');
-                }
-                
-                // Merge with current state
-                Object.assign(state, imported);
-                
-                // Clean up data
-                cleanupIncomeData();
-                recalculateQuarterlyTax();
-                
-                saveState();
-                location.reload(); // Reload to reinitialize everything
-                
-            } catch (error) {
-                alert('Error importing data: ' + error.message);
-            }
-        };
-        
-        reader.readAsText(file);
-    };
-    
-    input.click();
-}
-
-// Initialize on load
-window.addEventListener('load', init);
+        const totalEntries = state.incomeHistory.
