@@ -2632,4 +2632,172 @@ function closeModal(modalId) {
 
 function confirmReset() {
     if (confirm('Reset all income history? This cannot be undone and will reset your tax tracking.')) {
-        const totalEntries = state.incomeHistory.
+        const totalEntries = state.incomeHistory.length;
+        const totalAmount = state.incomeHistory.reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        state.incomeHistory = [];
+        state.quarterlyPaid = 0;
+        state.totalInterestPaid = 0;
+        
+        // Reset debts to original balances if available
+        state.debts.forEach(debt => {
+            if (debt.originalBalance) {
+                debt.balance = debt.originalBalance;
+            }
+        });
+        
+        logActivity(
+            'Reset',
+            `All income history cleared (${totalEntries} entries totaling ${formatCurrency(totalAmount)})`,
+            totalAmount,
+            'User',
+            {
+                entriesCleared: totalEntries,
+                totalAmountCleared: formatCurrency(totalAmount)
+            }
+        );
+        
+        saveState();
+        updateAllCalculations();
+    }
+}
+
+// Reset All Data function
+function resetAllData() {
+    document.getElementById('resetDataModal').style.display = 'block';
+}
+
+function performResetAllData() {
+    // Reset to defaults
+    state.debts = [
+        { id: 1, name: 'IRS 2022', balance: 10066, rate: 0.07, minPayment: 124.58, originalBalance: 10066 },
+        { id: 2, name: 'IRS 2023', balance: 13153, rate: 0.07, minPayment: 124.58, originalBalance: 13153 },
+        { id: 3, name: 'IRS 2024', balance: 33814, rate: 0.07, minPayment: 124.84, originalBalance: 33814 },
+        { id: 4, name: 'Chase Card', balance: 17968, rate: 0.2924, minPayment: 538, originalBalance: 17968 }
+    ];
+    state.quarterlyTaxGoal = 9566;
+    state.quarterlyPaid = 0;
+    state.strategy = 'snowball';
+    state.defaultSplits = {
+        tithe: 10,
+        tax: 22.9,
+        debt: 30,
+        flexible: 37.1
+    };
+    state.pauseTaxReserve = false;
+    state.thresholds = {
+        usePercentage: false,
+        interestWarning: 500,
+        interestBad: 800
+    };
+    state.irsOverrides = {
+        'Q1 2025': null,
+        'Q2 2025': null,
+        'Q3 2025': null,
+        'Q4 2025': null
+    };
+    state.incomeHistory = [];
+    state.paymentHistory = [];
+    state.activityLog = [];
+    state.totalInterestPaid = 0;
+    
+    // Log the reset action
+    logActivity(
+        'Reset',
+        'User reset all data to default via Fresh Start',
+        null,
+        'User',
+        {
+            action: 'Complete data reset'
+        }
+    );
+    
+    closeModal('resetDataModal');
+    saveState();
+    location.reload(); // Reload to reinitialize everything
+}
+
+// Export Functions
+function exportIncomeData() {
+    const headers = ['Date', 'Amount', 'Tithe', 'Tax', 'Debt', 'Flexible', 'Type', 'Notes', 'Override', 'Override Reason'];
+    const rows = state.incomeHistory.map(entry => [
+        new Date(entry.date).toLocaleDateString(),
+        entry.amount,
+        entry.tithe,
+        entry.tax,
+        entry.debt,
+        entry.flexible,
+        getIncomeTypeLabel(entry.type),
+        entry.notes || '',
+        entry.overrideDebtReduction ? 'Yes' : 'No',
+        entry.overrideReason || ''
+    ]);
+    
+    const csvContent = [headers, ...rows]
+        .map(row => row.map(field => `"${field}"`).join(','))
+        .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `income_history_${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+    
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+}
+
+function exportData() {
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `financial_data_${new Date().toISOString().split('T')[0]}.json`);
+    link.click();
+    
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+}
+
+function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                
+                // Validate basic structure
+                if (!imported.debts || !Array.isArray(imported.debts)) {
+                    throw new Error('Invalid data format');
+                }
+                
+                // Merge with current state
+                Object.assign(state, imported);
+                
+                // Clean up data
+                cleanupIncomeData();
+                recalculateQuarterlyTax();
+                
+                saveState();
+                location.reload(); // Reload to reinitialize everything
+                
+            } catch (error) {
+                alert('Error importing data: ' + error.message);
+            }
+        };
+        
+        reader.readAsText(file);
+    };
+    
+    input.click();
+}
+
+// Initialize on load
+window.addEventListener('load', init);
