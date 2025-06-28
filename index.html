@@ -1327,12 +1327,23 @@ window.addEventListener('DOMContentLoaded', () => {
             
             <!-- Income Ledger -->
             <div class="income-ledger">
-                <h2>
-                    Income History
-                    <span class="help-icon">ⓘ
-                        <span class="tooltip">Complete history of all income entries. Use Edit to modify entries or Delete to remove them entirely. Changes will update all calculations automatically.</span>
-                    </span>
-                </h2>
+<h2 style="display: flex; align-items: center; justify-content: space-between;">
+  <span>
+    Income History
+    <span class="help-icon">ⓘ
+      <span class="tooltip">Complete history of all income entries. Use Edit to modify entries or Delete to remove them entirely. Changes will update all calculations.</span>
+    </span>
+  </span>
+  <label style="font-size: 0.9em; font-weight: normal;">
+    <input type="checkbox" id="toggleExcluded" checked>
+    Show excluded income
+  </label>
+</h2>
+                <label style="font-size: 0.9em; float: right; margin-top: -24px; margin-right: 4px;">
+  <input type="checkbox" id="toggleExcluded" checked />
+  Show excluded income
+</label>
+
                 <div style="overflow-x: auto;">
                     <table class="ledger-table">
                         <thead>

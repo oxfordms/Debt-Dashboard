@@ -1073,11 +1073,40 @@ function updateIncomeLedger() {
                     <button onclick="deleteIncome(${entry.id})" class="delete-btn">🗑️</button>
                 </td>
             `;
+if (entry.overrideDebtReduction) {
+    row.classList.add('excluded-income');
+    row.title = `Excluded: ${entry.overrideReason || "no reason"}${entry.notes ? `\nNotes: ${entry.notes}` : ""}`;
+    const typeCell = row.cells[7];
+    if (typeCell) {
+        const tag = document.createElement('span');
+        tag.textContent  = ' 🚫 Excluded';
+        tag.style.fontSize = '0.8em';
+        tag.style.color    = '#b00';
+        typeCell.appendChild(tag);
+    }
+}
+
             tbody.appendChild(row);
         } catch (error) {
             console.error('Error creating income ledger row:', error, entry);
         }
     });
+}
+// === TOGGLE FILTER: Show/Hide Excluded Rows ===
+const toggle = document.getElementById('toggleExcluded');
+if (toggle && !toggle.dataset.bound) {
+    toggle.addEventListener('change', () => {
+        const show = toggle.checked;
+        document.querySelectorAll('.excluded-income')
+                .forEach(row => row.style.display = show ? '' : 'none');
+    });
+    toggle.dataset.bound = 'true';  // prevents duplicate bindings
+}
+
+// Apply toggle state immediately after render
+if (toggle && !toggle.checked) {
+    document.querySelectorAll('.excluded-income')
+            .forEach(row => row.style.display = 'none');
 }
 
 function deleteIncome(id) {
