@@ -641,6 +641,12 @@ function recordIncome(event) {
             splits.tax = 0;
         }
     } else {
+        // PHASE 1 FIX: If deferring tax and this is 1099 income, apply tax to DEBT (not flexible)
+        if (deferTax && (type === 'commission' || type === 'override' || type === 'other-1099')) {
+            splits.debt += splits.tax;
+            splits.tax = 0;
+        }
+
         splits = {
             tithe: parseFloat(document.getElementById('customTithe').value),
             tax: parseFloat(document.getElementById('customTax').value),
