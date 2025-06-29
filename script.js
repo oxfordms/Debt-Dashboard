@@ -2112,6 +2112,8 @@ function updateIncomesSummary() {
 }
 
 function updateDebtTable() {
+    console.log('🟡 Entered updateDebtTable...');
+
     const tbody = document.getElementById('debtTableBody');
     tbody.innerHTML = '';
     
