@@ -1191,9 +1191,9 @@ function recordDebtPayment(event) {
     
     // Apply payment
     debt.balance = Math.max(0, debt.balance - amount);
-    if (debt.balance === 0) {
-        state.debts = state.debts.filter(d => d.id !== debtId);
-    }
+if (Number.isFinite(debt.balance) && debt.balance === 0) {
+    state.debts = state.debts.filter(d => d.id !== debtId);
+}
     
     // Record payment history
     state.paymentHistory.unshift({
@@ -1559,7 +1559,7 @@ function deleteDebt(id) {
     
     if (confirm(`Delete ${debt.name}? This cannot be undone.`)) {
         state.debts = state.debts.filter(d => d.id !== id);
-        
+        saveState();
         // Log activity
         logActivity(
             'Delete',
@@ -1776,7 +1776,7 @@ function applyDebtPayment(amount) {
     }
     
     // Remove paid off debts
-    state.debts = state.debts.filter(d => d.balance > 0);
+state.debts = state.debts.filter(d => Number.isFinite(d.balance) && d.balance > 0);
 }
 
 function getOrderedDebts() {
