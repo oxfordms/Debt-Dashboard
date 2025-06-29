@@ -2193,12 +2193,17 @@ state.debts.forEach(d => {
         <button onclick="deleteDebt(${debt.id})" class="delete-btn">🗑️</button>
       </td>
     `;
+      console.log('🧾 Subtotal HTML preview:', row.outerHTML);
     tbody.appendChild(row);
   });
 
-  if (debts.length > 0) {
-    renderDebtSubtotal(tbody, debts, bucketName);
-  }
+if (debts.length > 0) {
+  console.log('🧪 Debts for subtotal check:', debts, 'Bucket:', bucketName);
+  renderDebtSubtotal(tbody, debts, bucketName);
+} else {
+  console.warn(`⚠️ Skipping renderDebtSubtotal: No debts found for bucket "${bucketName}"`);
+}
+
 });
 console.log('✅ Finished updateDebtTable');
 console.log('🔎 Subtotal rows:', document.querySelectorAll('.debt-subtotal-row'));
