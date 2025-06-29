@@ -38,6 +38,8 @@ const state = {
     debtSort: { column: 'balance', ascending: true }
 };
 function renderDebtSubtotal(tbody, debts, label) {
+ console.log(`🧾 Subtotal triggered for ${label}`, debts);
+  
   const totals = debts.reduce((a, d) => {
     a.balance += d.balance;
     a.min += d.minPayment;
