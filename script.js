@@ -49,6 +49,7 @@ function renderDebtSubtotal(tbody, debts, label) {
 
   const row = document.createElement('tr');
   row.className = `debt-subtotal-row ${label.toLowerCase()}-total`;
+  console.log('📛 Subtotal row class:', row.className);
   row.innerHTML = `
     <td style="text-align:right;"><strong>${label} Total:</strong></td>
     <td class="negative"><strong>${formatCurrency(totals.balance)}</strong></td>
