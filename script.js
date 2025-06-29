@@ -436,6 +436,21 @@ function resetToDefaults() {
         debtSort: { column: 'balance', ascending: true }
     });
 }
+/* ===== Load from LocalStorage (new) ===== */
+function loadState() {
+  const saved = localStorage.getItem('financialState');
+  if (!saved) return;
+
+  const parsed = JSON.parse(saved);
+
+  // Safeguard required arrays to avoid undefined errors
+  parsed.incomeEntries = parsed.incomeEntries || [];
+  parsed.debts = parsed.debts || [];
+  parsed.expenses = parsed.expenses || [];
+
+  Object.assign(state, parsed);  // non-destructive merge
+}
+/* ===== END Load ===== */
 
 function saveState() {
     localStorage.setItem('financialState', JSON.stringify(state));
