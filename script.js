@@ -2197,33 +2197,9 @@ state.debts.forEach(d => {
     renderDebtSubtotal(tbody, debts, bucketName);
   }
 });
+console.log('✅ Finished updateDebtTable');
+console.log('🔎 Subtotal rows:', document.querySelectorAll('.debt-subtotal-row'));
 
-    // === Totals row (NEW) ======================================
-const totals = sortedDebts.reduce(
-    (acc, d) => {
-        acc.balance     += d.balance;
-        acc.minPayment  += d.minPayment;
-        acc.monthlyInt  += d.balance * d.rate / 12;
-        return acc;
-    },
-    { balance: 0, minPayment: 0, monthlyInt: 0 }
-);
-
-const oldTotal = tbody.querySelector('.debt-totals-row');
-if (oldTotal) oldTotal.remove();
-
-const tRow = document.createElement('tr');
-tRow.className = 'debt-totals-row';
-tRow.innerHTML = `
-    <td style="text-align:right;"><strong>Totals:</strong></td>
-    <td class="negative"><strong>${formatCurrency(totals.balance)}</strong></td>
-    <td></td>
-    <td><strong>${formatCurrency(totals.minPayment)}</strong></td>
-    <td class="negative"><strong>${formatCurrency(totals.monthlyInt)}</strong></td>
-    <td></td>
-    <td></td>
-`;
-tbody.appendChild(tRow);
 // === END totals row ========================================
 
     // === Totals row (NEW) ======================================
