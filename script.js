@@ -1568,6 +1568,7 @@ function addDebt(event) {
         rate,
         minPayment,
         originalBalance: balance
+        type: document.getElementById('debtType').value
     };
     
     state.debts.push(newDebt);
@@ -2165,7 +2166,8 @@ const buckets = {
 };
 
 state.debts.forEach(d => {
-  if (d.name.toLowerCase().includes('irs')) {
+  const debtType = d.type?.toLowerCase();
+  if (debtType === 'tax') {
     buckets.Tax.push(d);
   } else {
     buckets.Consumer.push(d);
@@ -2198,7 +2200,12 @@ state.debts.forEach(d => {
       console.log('🧾 Subtotal HTML preview:', row.outerHTML);
     tbody.appendChild(row);
   });
-
+['Tax', 'Consumer'].forEach(bucketName => {
+  const debts = buckets[bucketName];
+  if (debts.length > 0) {
+    renderDebtSubtotal(tbody, debts, bucketName);
+  }
+});
 if (debts.length > 0) {
   console.log('🧪 Debts for subtotal check:', debts, 'Bucket:', bucketName);
   renderDebtSubtotal(tbody, debts, bucketName);
