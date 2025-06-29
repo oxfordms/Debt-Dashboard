@@ -58,6 +58,7 @@ function renderDebtSubtotal(tbody, debts, label) {
     <td></td>
     <td></td>
   `;
+   console.log('🛠️ About to append subtotal row:', row.outerHTML);
   tbody.appendChild(row);
 }
 
