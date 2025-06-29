@@ -37,6 +37,27 @@ const state = {
     currentEditingDebtId: null,
     debtSort: { column: 'balance', ascending: true }
 };
+function renderDebtSubtotal(tbody, debts, label) {
+  const totals = debts.reduce((a, d) => {
+    a.balance += d.balance;
+    a.min += d.minPayment;
+    a.int += d.balance * d.rate / 12;
+    return a;
+  }, { balance: 0, min: 0, int: 0 });
+
+  const row = document.createElement('tr');
+  row.className = `debt-subtotal-row ${label.toLowerCase()}-total`;
+  row.innerHTML = `
+    <td style="text-align:right;"><strong>${label} Total:</strong></td>
+    <td class="negative"><strong>${formatCurrency(totals.balance)}</strong></td>
+    <td></td>
+    <td><strong>${formatCurrency(totals.min)}</strong></td>
+    <td class="negative"><strong>${formatCurrency(totals.int)}</strong></td>
+    <td></td>
+    <td></td>
+  `;
+  tbody.appendChild(row);
+}
 
 // Motivational quotes with attributions
 const motivationalQuotes = [
@@ -2130,28 +2151,53 @@ function updateDebtTable() {
         return 0;
     });
     
-    sortedDebts.forEach(debt => {
-        const monthlyInterest = debt.balance * debt.rate / 12;
-        const payoffMonths = debt.minPayment > monthlyInterest ? 
-            Math.ceil(debt.balance / (debt.minPayment - monthlyInterest)) : 999;
-        const payoffDate = new Date();
-        payoffDate.setMonth(payoffDate.getMonth() + payoffMonths);
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${debt.name}</td>
-            <td class="negative">${formatCurrency(debt.balance)}</td>
-            <td>${(debt.rate * 100).toFixed(2)}%</td>
-            <td>${formatCurrency(debt.minPayment)}</td>
-            <td class="negative">${formatCurrency(monthlyInterest)}</td>
-            <td>${payoffMonths < 999 ? payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Never (min < interest)'}</td>
-            <td>
-                <button onclick="editDebt(${debt.id})" class="edit-btn">✏️</button>
-                <button onclick="deleteDebt(${debt.id})" class="delete-btn">🗑️</button>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
+tbody.innerHTML = '';  // clear table
+
+// Bucket debts by name
+const buckets = {
+  Tax: [],
+  Consumer: []
+};
+
+state.debts.forEach(d => {
+  if (d.name.toLowerCase().includes('irs')) {
+    buckets.Tax.push(d);
+  } else {
+    buckets.Consumer.push(d);
+  }
+});
+
+['Tax', 'Consumer'].forEach(bucketName => {
+  const debts = buckets[bucketName];
+  debts.forEach(debt => {
+    const monthlyInterest = debt.balance * debt.rate / 12;
+    const payoffMonths = debt.minPayment > monthlyInterest
+      ? Math.ceil(debt.balance / (debt.minPayment - monthlyInterest))
+      : 999;
+    const payoffDate = new Date();
+    payoffDate.setMonth(payoffDate.getMonth() + payoffMonths);
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${debt.name}</td>
+      <td class="negative">${formatCurrency(debt.balance)}</td>
+      <td>${(debt.rate * 100).toFixed(2)}%</td>
+      <td>${formatCurrency(debt.minPayment)}</td>
+      <td class="negative">${formatCurrency(monthlyInterest)}</td>
+      <td>${payoffMonths < 999 ? payoffDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Never (min < interest)'}</td>
+      <td>
+        <button onclick="editDebt(${debt.id})" class="edit-btn">✏️</button>
+        <button onclick="deleteDebt(${debt.id})" class="delete-btn">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  if (debts.length > 0) {
+    renderDebtSubtotal(tbody, debts, bucketName);
+  }
+});
+
     // === Totals row (NEW) ======================================
 const totals = sortedDebts.reduce(
     (acc, d) => {
