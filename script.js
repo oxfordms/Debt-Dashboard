@@ -163,20 +163,35 @@ if (deferCheckbox) {
         });
         
 // Set up listeners for live custom split inputs (main UI)
-        ['customTithe', 'customTax', 'customDebt'].forEach(id => {
-const el = document.getElementById(id);
-if (el) {
-  el.addEventListener('input', updateCustomFlexible);
-}
-        });
+['customTithe', 'customTax', 'customDebt'].forEach(id => {
+  try {
+    const el = document.getElementById(id);
+    console.log(`🔍 Checking ${id}:`, el);
+    if (el) {
+      el.addEventListener('input', updateCustomFlexible);
+    } else {
+      console.warn(`⚠️ Missing element: ${id}`);
+    }
+  } catch (err) {
+    console.error(`💥 Crash on ID ${id}:`, err);
+  }
+});
+
         
-// Set up listeners for edit modal split inputs
-        ['editTithe', 'editTax', 'editDebt'].forEach(id => {
-const el = document.getElementById(id);
-if (el) {
-  el.addEventListener('input', updateEditFlexible);
-}
-        });
+['editTithe', 'editTax', 'editDebt'].forEach(id => {
+  try {
+    const el = document.getElementById(id);
+    console.log(`🔍 Checking ${id}:`, el);
+    if (el) {
+      el.addEventListener('input', updateEditFlexible);
+    } else {
+      console.warn(`⚠️ Missing element: ${id}`);
+    }
+  } catch (err) {
+    console.error(`💥 Crash on ID ${id}:`, err);
+  }
+});
+
         
 
         // Set today's date for payment forms
