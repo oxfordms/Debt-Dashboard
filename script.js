@@ -2216,7 +2216,11 @@ if (debts.length > 0) {
 
 });
 console.log('✅ Finished updateDebtTable');
-console.log('🔎 Subtotal rows:', document.querySelectorAll('.debt-subtotal-row'));
+// Force reflow and delay DOM query to ensure subtotals are present
+setTimeout(() => {
+  const nodes = document.querySelectorAll('.debt-subtotal-row');
+  console.log('⏱️ Delayed subtotal row check:', nodes);
+}, 0);
 
 // === END totals row ========================================
 
