@@ -1257,27 +1257,9 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 <!-- Combined Override + Reimbursement UI -->
-<div class="form-group mt-2">
-  <label>
-    <input type="checkbox"
-           id="combinedIncomeCheckbox"
-           onchange="toggleReimbursementInput()">
-    Override + Reimbursement Check?
-  </label>
+<div class="form-group" style="align-self: end;">
+  <button type="submit" ...
 
-  <div id="reimbursementInputGroup"
-       style="display:none; margin-top:8px;">
-    <label for="reimbursementAmount"
-           style="font-size:.9rem; color:var(--text-muted);">
-      Reimbursement portion ($)
-    </label>
-    <input type="number"
-           id="reimbursementAmount"
-           min="0"
-           step="0.01"
-           placeholder="e.g. 1000">
-  </div>
-</div>
 
 <div class="form-group" style="align-self: end;">
   <button type="submit" class="pulse">Record Income</button>
@@ -2523,194 +2505,102 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         
         // Income Recording
-        function recordIncome(event) {
-            event.preventDefault();
-            
-            const income = parseFloat(document.getElementById('overrideIncome').value);
-            const type = document.getElementById('incomeType').value || 'other';
-            const notes = document.getElementById('incomeNotes').value;
-            const useDefault = document.getElementById('useDefaultSplit').checked;
-            const deferTax = document.getElementById('deferTaxReserve').checked;
-            
-            if (!income || income <= 0) return;
-            
-            // Get splits
-            let splits;
-            if (useDefault) {
-                splits = { ...state.defaultSplits };
-                // For W-2 income, don't apply tax reserve
-                if (type === 'salary' || type === 'bonus' || type === 'other-w2' || type === 'distribution') {
-                    splits.tax = 0;
-                    splits.flexible += state.defaultSplits.tax;
-                }
-                // If tax reserve is paused for 1099 income
-                else if (state.pauseTaxReserve && (type === 'commission' || type === 'override' || type === 'other-1099')) {
-                    splits.flexible += splits.tax;
-                    splits.tax = 0;
-                }
-            } else {
-                splits = {
-                    tithe: parseFloat(document.getElementById('customTithe').value),
-                    tax: parseFloat(document.getElementById('customTax').value),
-                    debt: parseFloat(document.getElementById('customDebt').value),
-                    flexible: parseFloat(document.getElementById('customFlexible').value)
-                };
-            }
-            
-            // If deferring tax and this is 1099 income, move tax to flexible
-            if (deferTax && (type === 'commission' || type === 'override' || type === 'other-1099')) {
-                splits.flexible += splits.tax;
-                splits.tax = 0;
-            }
-            
-            // Calculate amounts
-            const tithe = income * (splits.tithe / 100);
-            const tax = income * (splits.tax / 100);
-            const debt = income * (splits.debt / 100);
-            const flexible = income * (splits.flexible / 100);
-            
-            // Track quarterly tax - only for 1099 income types
-            if (type === 'commission' || type === 'override' || type === 'other-1099') {
-                state.quarterlyPaid += tax;
-            }
-            
-            // Record income history
-            const entry = {
-                id: Date.now(),
-                date: new Date().toISOString(),
-                amount: income,
-                tithe,
-                tax,
-                debt,
-                flexible,
-                type,
-                notes,
-                splits
-            };
-            
-            state.incomeHistory.unshift(entry); // Add to beginning
-            
-            // Log activity
-            logActivity(
-                'Income',
-                `${getIncomeTypeLabel(type)} income recorded`,
-                income,
-                'User',
-                {
-                    type,
-                    splits: `Tithe: ${splits.tithe}%, Tax: ${splits.tax}%, Debt: ${splits.debt}%, Flexible: ${splits.flexible}%`,
-                    notes
-                }
-            );
-            
-            // Apply debt payment
-            applyDebtPayment(debt);
-            
-            // Clear form
+function recordIncome(event) {
+  event.preventDefault();
 
-// Reset override UI
-document.getElementById('excludeDebtProgress').checked = false;
-document.getElementById('debtOverrideReason').value = '';
-document.getElementById('debtOverrideReasonGroup').style.display = 'none';
-            document.getElementById('overrideIncome').value = '';
-            document.getElementById('incomeNotes').value = '';
-            document.getElementById('useDefaultSplit').checked = true;
-            document.getElementById('deferTaxReserve').checked = false;
-            document.getElementById('customSplitEditor').style.display = 'none';
-            
-            // Show success animation
-            showSuccessAnimation();
-            
-            saveState();
-            updateAllCalculations();
-        }
-        
-        // Income Editing
-        function editIncome(id) {
-            const entry = state.incomeHistory.find(e => e.id === id);
-            if (!entry) return;
-            
-            state.currentEditingIncomeId = id;
-            
-            // Populate edit form
-            document.getElementById('editIncomeAmount').value = entry.amount;
-            document.getElementById('editIncomeType').value = entry.type || 'other';
-            document.getElementById('editIncomeNotes').value = entry.notes || '';
-            document.getElementById('editTithe').value = entry.splits.tithe;
-            document.getElementById('editTax').value = entry.splits.tax;
-            document.getElementById('editDebt').value = entry.splits.debt;
-            document.getElementById('editFlexible').value = entry.splits.flexible;
-            
-            document.getElementById('editIncomeModal').style.display = 'block';
-        }
-        
-        function saveIncomeEdit(event) {
-            event.preventDefault();
-            
-            const id = state.currentEditingIncomeId;
-            const entry = state.incomeHistory.find(e => e.id === id);
-            if (!entry) return;
-            
-            // Get old values to reverse tax tracking
-            const oldTax = entry.tax;
-            const oldType = entry.type;
-            
-            // Get new values
-            const newAmount = parseFloat(document.getElementById('editIncomeAmount').value);
-            const newType = document.getElementById('editIncomeType').value || 'other';
-            const newNotes = document.getElementById('editIncomeNotes').value;
-            
-            const newSplits = {
-                tithe: parseFloat(document.getElementById('editTithe').value),
-                tax: parseFloat(document.getElementById('editTax').value),
-                debt: parseFloat(document.getElementById('editDebt').value),
-                flexible: parseFloat(document.getElementById('editFlexible').value)
-            };
-            
-            // Calculate new amounts
-            const newTithe = newAmount * (newSplits.tithe / 100);
-            const newTax = newAmount * (newSplits.tax / 100);
-            const newDebt = newAmount * (newSplits.debt / 100);
-            const newFlexible = newAmount * (newSplits.flexible / 100);
-            
-            // Update tax tracking - only for 1099 income types
-            if (oldType === 'commission' || oldType === 'override' || oldType === 'other-1099') {
-                state.quarterlyPaid -= oldTax;
-            }
-            if (newType === 'commission' || newType === 'override' || newType === 'other-1099') {
-                state.quarterlyPaid += newTax;
-            }
-            // Ensure quarterlyPaid doesn't go negative
-            state.quarterlyPaid = Math.max(0, state.quarterlyPaid);
-            
-            // Update entry
-            entry.amount = newAmount;
-            entry.type = newType;
-            entry.notes = newNotes;
-            entry.tithe = newTithe;
-            entry.tax = newTax;
-            entry.debt = newDebt;
-            entry.flexible = newFlexible;
-            entry.splits = newSplits;
-            
-            // Log activity
-            logActivity(
-                'Edit',
-                `${getIncomeTypeLabel(newType)} income entry modified`,
-                newAmount,
-                'User',
-                {
-                    oldAmount: entry.amount,
-                    type: newType,
-                    notes: newNotes
-                }
-            );
-            
-            closeModal('editIncomeModal');
-            showSuccessAnimation();
-            saveState();
-            updateAllCalculations();
-        }
+  // --- Row A values ------------------------------------------------
+  const primaryAmount = parseFloat(
+    document.getElementById('overrideIncome').value
+  ) || 0;
+
+  const type  = document.getElementById('incomeType').value || 'other';
+  const notes = document.getElementById('incomeNotes').value;
+  const useDefault = document.getElementById('useDefaultSplit').checked;
+  const deferTax   = document.getElementById('deferTaxReserve').checked;
+
+  // --- Row B values ------------------------------------------------
+  const overrideAmount       = parseFloat(
+    document.getElementById('overrideAmount').value
+  ) || 0;
+
+  const reimbursedExpenseRaw = parseFloat(
+    document.getElementById('reimbursedExpense').value
+  ) || 0;
+
+  const reimbursedExpense = Math.min(reimbursedExpenseRaw, overrideAmount); // clamp
+
+  // --- Derive true income portions --------------------------------
+  const trueOverride = Math.max(overrideAmount - reimbursedExpense, 0);
+  const totalForSplit = primaryAmount + trueOverride;
+
+  if (totalForSplit <= 0) {
+    alert('Enter at least one positive amount.');
+    return;
+  }
+
+  // --- Determine split percentages (unchanged) --------------------
+  let splits = useDefault ? { ...state.defaultSplits } : {
+    tithe:     parseFloat(document.getElementById('customTithe').value),
+    tax:       parseFloat(document.getElementById('customTax').value),
+    debt:      parseFloat(document.getElementById('customDebt').value),
+    flexible:  parseFloat(document.getElementById('customFlexible').value)
+  };
+
+  // W-2 / defer-tax logic (same as before)
+  if (type === 'salary' || type === 'bonus' || type === 'other-w2' || type === 'distribution') {
+    splits.flexible += splits.tax; splits.tax = 0;
+  }
+
+  if (deferTax && (type === 'commission' || type === 'other-1099')) {
+    splits.flexible += splits.tax; splits.tax = 0;
+  }
+
+  // --- Dollar allocations (ONLY on totalForSplit) -----------------
+  const tithe = totalForSplit * (splits.tithe / 100);
+  const tax   = totalForSplit * (splits.tax   / 100);
+  const debt  = totalForSplit * (splits.debt  / 100);
+  const flex  = totalForSplit * (splits.flexible / 100);
+
+  if (type === 'commission' || type === 'other-1099') {
+    state.quarterlyPaid += tax;
+  }
+
+  // --- Record entry -----------------------------------------------
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    amount: primaryAmount + overrideAmount,     // full check face value
+    reimbursedExpense,
+    tithe, tax, debt, flexible,
+    trueOverride,
+    type,
+    notes,
+    splits
+  };
+  state.incomeHistory.unshift(entry);
+
+  logActivity(
+    'Income',
+    `${getIncomeTypeLabel(type)} + override recorded`,
+    entry.amount,
+    'User',
+    { notes, reimbursedExpense, splits }
+  );
+
+  if (debt > 0) applyDebtPayment(debt);
+
+  // --- Reset form --------------------------------------------------
+  document.getElementById('overrideIncome').value = '';
+  document.getElementById('incomeNotes').value = '';
+  document.getElementById('overrideAmount').value = '';
+  document.getElementById('reimbursedExpense').value = '';
+  document.getElementById('useDefaultSplit').checked = true;
+  document.getElementById('deferTaxReserve').checked = false;
+
+  showSuccessAnimation();
+  saveState();
+  updateAllCalculations();
+}
         
         function updateEditFlexible() {
             const tithe = parseFloat(document.getElementById('editTithe').value) || 0;
