@@ -1256,59 +1256,25 @@ window.addEventListener('DOMContentLoaded', () => {
 
   </div>
 </div>
-<!-- Combined Override + Reimbursement UI -->
-<div class="form-group" style="align-self: end;">
-  <button type="submit" ...
-
-
-<div class="form-group" style="align-self: end;">
-  <button type="submit" class="pulse">Record Income</button>
+<!-- Override-Only Row -->
+<div class="form-group mt-2">
+  <label for="overrideIncome">Override Amount ($)</label>
+  <input type="number"
+         id="overrideIncome"
+         min="0"
+         step="0.01"
+         placeholder="e.g. 5000">
 </div>
 
-                    </div>
-                </form>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="useDefaultSplit" checked>
-                    <label for="useDefaultSplit">Use default split (10% tithe, 22.9% tax for 1099 only, rest to debt)
-                        <span class="help-icon">ⓘ
-                            <span class="tooltip">When checked, income will be split using your default percentages set in Settings. Uncheck to customize this specific income entry. Note: Tax reserve only applies to 1099 income (Commission, Override, and Other 1099).</span>
-                        </span>
-                    </label>
-                </div>
-                
-                <div class="checkbox-group">
-                    <input type="checkbox" id="deferTaxReserve">
-                    <label for="deferTaxReserve">Defer tax reserve (if already ahead on quarterly taxes)
-                        <span class="help-icon">ⓘ
-                            <span class="tooltip">Check this to skip the tax reserve for this income entry if you're already ahead on quarterly taxes. The tax portion will be added to flexible instead.</span>
-                        </span>
-                    </label>
-                </div>
-                
-                <!-- Custom Split Editor -->
-                <div class="split-editor" id="customSplitEditor" style="display: none;">
-                    <h3>Custom Split for This Income</h3>
-                    <div class="split-inputs">
-                        <div class="split-input-group">
-                            <label>Tithe %</label>
-                            <input type="number" id="customTithe" value="10" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Tax %</label>
-                            <input type="number" id="customTax" value="22.9" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Debt %</label>
-                            <input type="number" id="customDebt" value="30" min="0" max="100" step="0.1">
-                        </div>
-                        <div class="split-input-group">
-                            <label>Flexible %</label>
-                            <input type="number" id="customFlexible" value="37.1" readonly style="background: var(--bg-tertiary);">
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="form-group mt-2">
+  <label for="reimbursementAmount">Reimbursement Portion ($)</label>
+  <input type="number"
+         id="reimbursementAmount"
+         min="0"
+         step="0.01"
+         placeholder="Leave blank if none">
+</div>
+
             
             <!-- Income Ledger -->
             <div class="income-ledger">
