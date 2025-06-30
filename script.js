@@ -159,11 +159,10 @@ if (deferCheckbox) {
       console.log('Tax reserve will be deferred for this 1099 income');
     }
   });
-}
 
         });
         
-        // Set up custom split listeners
+// Set up listeners for live custom split inputs (main UI)
         ['customTithe', 'customTax', 'customDebt'].forEach(id => {
 const el = document.getElementById(id);
 if (el) {
@@ -171,7 +170,7 @@ if (el) {
 }
         });
         
-        // Set up edit modal split listeners
+// Set up listeners for edit modal split inputs
         ['editTithe', 'editTax', 'editDebt'].forEach(id => {
 const el = document.getElementById(id);
 if (el) {
