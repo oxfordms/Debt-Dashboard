@@ -1253,26 +1253,29 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- Override: exclude from debt-reduction -->
-<div class="form-group mt-2">
-  <div class="form-check">
-    <input class="form-check-input"
-           type="checkbox"
-           id="overrideDebtReduction"
-           onchange="document.getElementById('overrideControls')
-                       .classList.toggle('show', this.checked);" />
-    <label class="form-check-label" for="overrideDebtReduction">
-      Exclude this income from debt-reduction stats
-    </label>
-  </div>
 
-  <div id="overrideControls" class="collapse mt-2">
-    <label for="overrideReason" class="small text-muted mb-1">
-      Reason<span class="text-danger">*</span>
+  </div>
+</div>
+<!-- Combined Override + Reimbursement UI -->
+<div class="form-group mt-2">
+  <label>
+    <input type="checkbox"
+           id="combinedIncomeCheckbox"
+           onchange="toggleReimbursementInput()">
+    Override + Reimbursement Check?
+  </label>
+
+  <div id="reimbursementInputGroup"
+       style="display:none; margin-top:8px;">
+    <label for="reimbursementAmount"
+           style="font-size:.9rem; color:var(--text-muted);">
+      Reimbursement portion ($)
     </label>
-    <input id="overrideReason"
-           type="text"
-           class="form-control"
-           placeholder="TSCG Expense Reimbursement" />
+    <input type="number"
+           id="reimbursementAmount"
+           min="0"
+           step="0.01"
+           placeholder="e.g. 1000">
   </div>
 </div>
 
