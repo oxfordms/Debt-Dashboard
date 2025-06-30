@@ -218,6 +218,15 @@ if (deferCheckbox) {
     console.error(`💥 Crash on ID ${id}:`, err);
   }
 });
+// Set up "Show/Hide Excluded" toggle once
+const toggleExcluded = document.getElementById('toggleExcluded');
+if (toggleExcluded) {
+    toggleExcluded.addEventListener('change', function () {
+        const show = this.checked;
+        document.querySelectorAll('.excluded-income')
+            .forEach(row => row.style.display = show ? '' : 'none');
+    });
+}
 
         
 
@@ -1218,15 +1227,7 @@ if (entry.overrideDebtReduction) {
     });
 }
 // === TOGGLE FILTER: Show/Hide Excluded Rows ===
-const toggle = document.getElementById('toggleExcluded');
-if (toggle && !toggle.dataset.bound) {
-    toggle.addEventListener('change', () => {
-        const show = toggle.checked;
-        document.querySelectorAll('.excluded-income')
-                .forEach(row => row.style.display = show ? '' : 'none');
-    });
-    toggle.dataset.bound = 'true';  // prevents duplicate bindings
-}
+
 
 // Apply toggle state immediately after render
 if (toggle && !toggle.checked) {
@@ -1653,7 +1654,7 @@ function addDebt(event) {
         balance,
         rate,
         minPayment,
-        originalBalance: balance
+        originalBalance: balance,
         type: document.getElementById('debtType').value
     };
     
