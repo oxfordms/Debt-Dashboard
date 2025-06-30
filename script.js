@@ -1,3 +1,14 @@
+// 🔍 GLOBAL DEBUG: Catch null element addEventListener
+const originalAddEventListener = Element.prototype.addEventListener;
+Element.prototype.addEventListener = function (...args) {
+  if (!this) {
+    console.error("🔥 addEventListener called on null element!", args);
+    console.trace(); // shows where it's coming from
+    return;
+  }
+  return originalAddEventListener.apply(this, args);
+};
+
 // Financial Command Center v2025.06.18.5
 // State Management
 const state = {
