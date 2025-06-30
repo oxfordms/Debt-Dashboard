@@ -165,12 +165,18 @@ if (deferCheckbox) {
         
         // Set up custom split listeners
         ['customTithe', 'customTax', 'customDebt'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateCustomFlexible);
+const el = document.getElementById(id);
+if (el) {
+  el.addEventListener('input', updateCustomFlexible);
+}
         });
         
         // Set up edit modal split listeners
         ['editTithe', 'editTax', 'editDebt'].forEach(id => {
-            document.getElementById(id).addEventListener('input', updateEditFlexible);
+const el = document.getElementById(id);
+if (el) {
+  el.addEventListener('input', updateEditFlexible);
+}
         });
         
 
