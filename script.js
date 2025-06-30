@@ -121,10 +121,16 @@ function init() {
         }, 100);
         
         // Set default split values
-        document.getElementById('defaultTithe').value = state.defaultSplits.tithe;
-        document.getElementById('defaultTax').value = state.defaultSplits.tax;
-        document.getElementById('defaultDebt').value = state.defaultSplits.debt;
-        document.getElementById('defaultFlexible').value = state.defaultSplits.flexible;
+['defaultTithe', 'defaultTax', 'defaultDebt', 'defaultFlexible'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    const key = id.replace('default', '').toLowerCase();
+    el.value = state.defaultSplits[key];
+  } else {
+    console.warn(`⚠️ Missing element: ${id}`);
+  }
+});
+
         
         // Set threshold values
         document.getElementById('usePercentageColors').value = state.thresholds.usePercentage ? 'true' : 'false';
@@ -964,13 +970,22 @@ function updateCustomFlexible() {
 function updateDefaultSplits(logChanges = false) {
     const oldSplits = { ...state.defaultSplits };
     
-    const tithe = parseFloat(document.getElementById('defaultTithe').value) || 0;
-    const tax = parseFloat(document.getElementById('defaultTax').value) || 0;
-    const debt = parseFloat(document.getElementById('defaultDebt').value) || 0;
-    const flexible = Math.max(0, 100 - tithe - tax - debt);
-    
-    state.defaultSplits = { tithe, tax, debt, flexible };
-    document.getElementById('defaultFlexible').value = flexible.toFixed(1);
+const titheEl = document.getElementById('defaultTithe');
+const taxEl = document.getElementById('defaultTax');
+const debtEl = document.getElementById('defaultDebt');
+
+const tithe = titheEl ? parseFloat(titheEl.value) : 0;
+const tax = taxEl ? parseFloat(taxEl.value) : 0;
+const debt = debtEl ? parseFloat(debtEl.value) : 0;
+const flexible = Math.max(0, 100 - tithe - tax - debt);
+
+state.defaultSplits = { tithe, tax, debt, flexible };
+
+const flexibleEl = document.getElementById('defaultFlexible');
+if (flexibleEl) {
+  flexibleEl.value = flexible.toFixed(1);
+}
+
     
     // Clear any existing timer
     if (defaultSplitTimer) clearTimeout(defaultSplitTimer);
