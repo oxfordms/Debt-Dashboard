@@ -160,12 +160,7 @@ function init() {
             document.getElementById(id).addEventListener('input', updateEditFlexible);
         });
         
-        // Set up edit modal override checkbox listener
-        document.getElementById('editOverrideDebtReduction').addEventListener('change', function() {
-            document.getElementById('editOverrideReasonGroup').style.display = 
-                this.checked ? 'block' : 'none';
-        });
-        
+
         // Set today's date for payment forms
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('debtPaymentDate').value = today;
