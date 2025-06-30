@@ -142,16 +142,25 @@ if (defaultSplitToggle) {
 }
         
         // Set up income type listener
-        document.getElementById('incomeType').addEventListener('change', function() {
-            updateCustomTaxBasedOnType();
-        });
+const incomeTypeField = document.getElementById('incomeType');
+if (incomeTypeField) {
+  incomeTypeField.addEventListener('change', function () {
+    updateCustomTaxBasedOnType();
+  });
+}
+
         
         // Set up defer tax checkbox listener
-        document.getElementById('deferTaxReserve').addEventListener('change', function() {
-            const incomeType = document.getElementById('incomeType').value;
-            if (this.checked && (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099')) {
-                console.log('Tax reserve will be deferred for this 1099 income');
-            }
+const deferCheckbox = document.getElementById('deferTaxReserve');
+if (deferCheckbox) {
+  deferCheckbox.addEventListener('change', function () {
+    const incomeType = document.getElementById('incomeType')?.value;
+    if (this.checked && (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099')) {
+      console.log('Tax reserve will be deferred for this 1099 income');
+    }
+  });
+}
+
         });
         
         // Set up custom split listeners
