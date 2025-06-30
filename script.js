@@ -787,6 +787,10 @@ function recordIncome(event) {
 // Income Editing
 function editIncome(id) {
     const entry = state.incomeHistory.find(e => e.id === id);
+    // === Pre-fill override + reimbursement fields ===
+document.getElementById('overrideReason').value = entry.overrideReason || '';
+document.getElementById('reimbursementAmount').value = entry.reimbursementAmount || '';
+document.getElementById('reimbursementNotes').value = entry.reimbursementNotes || '';
     if (!entry) return;
     
     state.currentEditingIncomeId = id;
