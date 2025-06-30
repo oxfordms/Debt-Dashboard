@@ -127,15 +127,19 @@ function init() {
         }
         
         // Set up checkbox listener
-        document.getElementById('useDefaultSplit').addEventListener('change', function() {
-            document.getElementById('customSplitEditor').style.display = 
-                this.checked ? 'none' : 'block';
-            
-            // Update custom tax based on income type
-            if (!this.checked) {
-                updateCustomTaxBasedOnType();
-            }
-        });
+const defaultSplitToggle = document.getElementById('useDefaultSplit');
+if (defaultSplitToggle) {
+  defaultSplitToggle.addEventListener('change', function () {
+    const editor = document.getElementById('customSplitEditor');
+    if (editor) {
+      editor.style.display = this.checked ? 'none' : 'block';
+    }
+
+    if (!this.checked) {
+      updateCustomTaxBasedOnType();
+    }
+  });
+}
         
         // Set up income type listener
         document.getElementById('incomeType').addEventListener('change', function() {
