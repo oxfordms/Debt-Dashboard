@@ -85,6 +85,16 @@ let thresholdsTimer = null;
 
 // Initialize
 function init() {
+      // 🔍 TEMPORARY DEBUG — Log missing getElementById calls
+  const originalGetElementById = document.getElementById;
+  document.getElementById = function(id) {
+    const el = originalGetElementById.call(document, id);
+    if (!el && id) {
+      console.error(`🔥 getElementById('${id}') returned null!`);
+    }
+    return el;
+  };
+
     try {
         loadState();
         
