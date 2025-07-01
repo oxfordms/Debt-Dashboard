@@ -119,7 +119,33 @@ function init() {
             updateTaxWarning();
             updateMacroSummary();
         }, 100);
-        
+            // Income type toggle for reimbursement field
+    const incomeTypeSelect = document.getElementById('incomeType');
+    const reimbursementGroup = document.getElementById('reimbursementGroup');
+
+    if (incomeTypeSelect && reimbursementGroup) {
+        // Set initial state on page load
+        if (incomeTypeSelect.value === 'override') {
+            reimbursementGroup.style.display = 'block';
+        } else {
+            reimbursementGroup.style.display = 'none';
+        }
+
+        incomeTypeSelect.addEventListener('change', function () {
+            if (this.value === 'override') {
+                reimbursementGroup.style.display = 'block';
+                console.log('✅ Showing reimbursement field for Override income');
+            } else {
+                reimbursementGroup.style.display = 'none';
+                const reimbursementInput = document.getElementById('reimbursementAmount');
+                if (reimbursementInput) {
+                    reimbursementInput.value = '0';
+                }
+                console.log('👁️ Hiding reimbursement field for', this.value);
+            }
+        });
+    }
+
         // Set default split values
 ['defaultTithe', 'defaultTax', 'defaultDebt', 'defaultFlexible'].forEach(id => {
   const el = document.getElementById(id);
@@ -668,6 +694,11 @@ function recordIncome(event) {
     const incomeType = document.getElementById("incomeType").value;
     const grossAmount = parseFloat(document.getElementById("incomeAmount").value) || 0;
     const reimbursementAmount = parseFloat(document.getElementById("reimbursementAmount").value) || 0;
+// Validate reimbursement doesn't exceed gross amount
+if (reimbursementAmount > grossAmount) {
+    alert('Reimbursement amount cannot exceed check amount');
+    return;
+}
 
     const netAmount = incomeType === "override" ? grossAmount - reimbursementAmount : grossAmount;
 
