@@ -703,30 +703,56 @@ function clearActivityLog() {
 // Income Recording
 function recordIncome(event) {
   event.preventDefault();
+  console.log('🚀 recordIncome FIRED');
 
-  // --- 1. Gather inputs -----------------------------------------
-  const totalAmount = parseFloat(document.getElementById('overrideIncome').value);
-  if (!totalAmount || totalAmount <= 0) return;
+  const overrideEl = document.getElementById('overrideIncome');
+  const reimbursementEl = document.getElementById('reimbursementAmount');
+  const incomeTypeEl = document.getElementById('incomeType');
+  const incomeNotesEl = document.getElementById('incomeNotes');
 
-  const type  = document.getElementById('incomeType').value || 'other';
-  const notes = document.getElementById('incomeNotes').value;
-  const useDefault = document.getElementById('useDefaultSplit').checked;
-  const deferTax   = document.getElementById('deferTaxReserve').checked;
+  console.log('📋 Element Check:', {
+    overrideIncome: overrideEl ? '✅' : '❌',
+    reimbursementAmount: reimbursementEl ? '✅' : '❌',
+    incomeType: incomeTypeEl ? '✅' : '❌',
+    incomeNotes: incomeNotesEl ? '✅' : '❌'
+  });
 
-  // --- 2. Split reimbursement vs. real income -------------------
-  const isCombined = document.getElementById('combinedIncomeCheckbox').checked;
-  let reimbursementAmount = 0;
-  let incomePortion       = totalAmount;     // default: all is income
+  const overrideAmount = parseFloat(overrideEl?.value || 0);
+  const reimbursementAmount = parseFloat(reimbursementEl?.value || 0);
+  const incomeType = incomeTypeEl?.value || '';
+  const incomeNotes = incomeNotesEl?.value || '';
 
-  if (isCombined) {
-    reimbursementAmount = parseFloat(document.getElementById('reimbursementAmount').value) || 0;
-    if (reimbursementAmount < 0 || reimbursementAmount > totalAmount) {
-      alert('Reimbursement amount must be between 0 and the total deposit.');
-      return;
-    }
-    incomePortion = totalAmount - reimbursementAmount;
+  console.log('💰 Parsed Values:', {
+    overrideAmount,
+    reimbursementAmount,
+    incomeType,
+    incomeNotes
+  });
+
+  const isCombined = true;
+
+  if (!overrideAmount && !reimbursementAmount) {
+    console.log('⚠️ No income values entered.');
+    return;
   }
 
+  const newEntry = {
+    type: incomeType,
+    amount: overrideAmount + reimbursementAmount,
+    override: overrideAmount,
+    reimbursement: reimbursementAmount,
+    date: new Date().toLocaleDateString(),
+    notes: incomeNotes
+  };
+
+  data.incomeEntries.push(newEntry);
+  saveState();
+  renderIncomeHistory();
+  clearIncomeForm();
+
+  console.log('✅ Entry saved:', newEntry);
+}
+``
   // --- 3. Determine split percentages ---------------------------
   let splits;
   if (useDefault) {
