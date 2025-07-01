@@ -689,15 +689,77 @@ document.getElementById("incomeType").addEventListener("change", function () {
 
 // Income Recording
 function recordIncome(event) {
-    event.preventDefault();
+  event.preventDefault();
 
-    const incomeType = document.getElementById("incomeType").value;
-    const grossAmount = parseFloat(document.getElementById("incomeAmount").value) || 0;
-    const reimbursementAmount = parseFloat(document.getElementById("reimbursementAmount").value) || 0;
-// Validate reimbursement doesn't exceed gross amount
-if (reimbursementAmount > grossAmount) {
+  const incomeType = document.getElementById("incomeType").value;
+  const grossAmount = parseFloat(document.getElementById("incomeAmount").value) || 0;
+  const reimbursementAmount = parseFloat(document.getElementById("reimbursementAmount").value) || 0;
+  const notes = document.getElementById("incomeNotes").value || '';
+
+  const overrideDebtReduction = document.getElementById("overrideDebtReduction")?.checked || false;
+  const overrideReason = document.getElementById("overrideReason")?.value || '';
+
+  if (reimbursementAmount > grossAmount) {
     alert('Reimbursement amount cannot exceed check amount');
     return;
+  }
+
+  const netAmount = incomeType === "Override" ? grossAmount - reimbursementAmount : grossAmount;
+
+  const splits = { ...state.defaultSplits };
+  const tithe = netAmount * (splits.tithe / 100);
+  const tax = netAmount * (splits.tax / 100);
+  const debt = netAmount * (splits.debt / 100);
+  const flexible = netAmount * (splits.flexible / 100);
+
+  const newEntry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    type: incomeType,
+    grossAmount: grossAmount,
+    reimbursementAmount: reimbursementAmount,
+    netAmount: netAmount,
+    tithe: tithe,
+    tax: tax,
+    debt: debt,
+    flexible: flexible,
+    splits: splits,
+    notes: notes,
+    overrideDebtReduction: overrideDebtReduction,
+    overrideReason: overrideReason
+  };
+
+  state.incomeHistory.push(newEntry);
+
+  if (!overrideDebtReduction && debt > 0) {
+    applyDebtPayment(debt);
+  }
+
+  logActivity(
+    'Income',
+    `${getIncomeTypeLabel(incomeType)} income recorded${reimbursementAmount > 0 ? ' with reimbursement' : ''}`,
+    grossAmount,
+    'User',
+    {
+      type: incomeType,
+      grossAmount: grossAmount,
+      reimbursementAmount: reimbursementAmount,
+      netAmount: netAmount,
+      splits: `Tithe: ${splits.tithe}%, Tax: ${splits.tax}%, Debt: ${splits.debt}%, Flexible: ${splits.flexible}%`,
+      notes: notes,
+      override: overrideDebtReduction ? `Yes - ${overrideReason}` : 'No'
+    }
+  );
+
+  document.getElementById('incomeAmount').value = '';
+  document.getElementById('reimbursementAmount').value = '0';
+  document.getElementById('incomeNotes').value = '';
+  document.getElementById('overrideDebtReduction').checked = false;
+  document.getElementById('overrideReason').value = '';
+
+  showSuccessAnimation();
+  saveState();
+  updateAllCalculations();
 }
 
     const netAmount = incomeType === "override" ? grossAmount - reimbursementAmount : grossAmount;
