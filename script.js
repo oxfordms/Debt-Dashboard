@@ -178,16 +178,18 @@ if (incomeTypeField) {
 
         
         // Set up defer tax checkbox listener
+// Set up defer tax checkbox listener
 const deferCheckbox = document.getElementById('deferTaxReserve');
 if (deferCheckbox) {
   deferCheckbox.addEventListener('change', function () {
-    const incomeType = document.getElementById('incomeType')?.value;
+    const incomeTypeEl = document.getElementById('incomeType');
+    const incomeType = incomeTypeEl ? incomeTypeEl.value : null;
     if (this.checked && (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099')) {
-      console.log('Tax reserve will be deferred for this 1099 income');
+      console.log('✅ Tax reserve will be deferred for this 1099 income');
     }
   });
+}
 
-        });
         
 // Set up listeners for live custom split inputs (main UI)
 ['customTithe', 'customTax', 'customDebt'].forEach(id => {
