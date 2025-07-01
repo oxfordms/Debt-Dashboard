@@ -1239,7 +1239,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <div class="quick-actions">
 <h2>Record Income</h2>
 
-<form onsubmit="recordIncome(event)" class="income-form">
+<form id="incomeForm" onsubmit="recordIncome(event)" class="income-form">
 
   <!-- Row 1: Income Type -->
   <div class="form-row">
@@ -1259,24 +1259,26 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 
   <!-- Row 2: Check Amount + Optional Reimbursement + Button -->
-<!-- Row 2: Check Amount + Optional Reimbursement + Button -->
-
-<!-- Row 2: Check Amount + Optional Reimbursement + Button -->
+ <!-- Row 2: Check Amount + Optional Reimbursement + Button -->
 <div class="form-row">
+  <!-- Check Amount Input -->
   <div class="form-group">
     <label for="incomeAmount">Check Amount</label>
-    <input type="number" id="incomeAmount" step="0.01" placeholder="Enter check amount" required>
+    <input type="number" id="incomeAmount" step="0.01" required />
   </div>
 
+  <!-- Reimbursement Input (only shows on Override) -->
   <div class="form-group" id="reimbursementGroup" style="display: none;">
     <label for="reimbursementAmount">Reimbursement Amount</label>
-    <input type="number" id="reimbursementAmount" step="0.01" value="0" placeholder="Enter reimbursed expenses">
+    <input type="number" id="reimbursementAmount" step="0.01" />
   </div>
 
-  <div class="form-group">
-    <button type="submit" class="small-button">Record Income</button>
-  </div>
+  <!-- Record Button -->
+  <button type="submit" id="recordIncomeBtn">Record Income</button>
 </div>
+   
+<!-- Row 2: Check Amount + Optional Reimbursement + Button -->
+
 
 </form>
 
