@@ -730,6 +730,7 @@ function recordIncome(event) {
   };
 
   state.incomeHistory.push(newEntry);
+updateIncomeLedger();
 
   if (!overrideDebtReduction && debt > 0) {
     applyDebtPayment(debt);
@@ -1160,7 +1161,8 @@ function updateIncomeLedger() {
             
             row.innerHTML = `
                 <td>${date.toLocaleDateString()}</td>
-                <td class="positive">${formatCurrency(entry.amount)}${overrideBadge}</td>
+<td class="positive">${formatCurrency(entry.grossAmount)}${overrideBadge}</td>
+<td class="neutral">${formatCurrency(entry.reimbursementAmount || 0)}</td>
                 <td>${formatCurrency(entry.tithe || 0)} (${(splits.tithe || 0).toFixed(1)}%)</td>
                 <td>${formatCurrency(entry.tax || 0)} (${(splits.tax || 0).toFixed(1)}%)</td>
                 <td>${formatCurrency(entry.debt || 0)} (${(splits.debt || 0).toFixed(1)}%)</td>
