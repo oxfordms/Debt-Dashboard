@@ -713,10 +713,9 @@ function recordIncome(event) {
   const notes = document.getElementById('incomeNotes')?.value || '';
 
   const netIncome = overrideAmount - reimbursementAmount;
-  console.log('💰 Values:', { overrideAmount, reimbursementAmount, netIncome, incomeType });
 
   if (netIncome <= 0) {
-    alert('Please enter a valid income amount');
+    alert('Please enter a valid income amount (override must be greater than reimbursement)');
     return;
   }
 
@@ -736,7 +735,7 @@ function recordIncome(event) {
   const entry = {
     id: Date.now(),
     date: new Date().toISOString(),
-    amount: overrideAmount,
+    amount: overrideAmount,  // store gross
     reimbursementAmount,
     netIncome,
     tithe, tax, debt, flexible,
@@ -745,12 +744,23 @@ function recordIncome(event) {
     splits
   };
 
+  if (!state.incomeHistory) state.incomeHistory = [];
   state.incomeHistory.unshift(entry);
+
+  console.log('✅ Entry saved:', entry);
+
+  // Reset form fields
+  document.getElementById('overrideIncome').value = '';
+  document.getElementById('reimbursementAmount').value = '';
+  document.getElementById('incomeNotes').value = '';
+  document.getElementById('useDefaultSplit').checked = true;
+  document.getElementById('customSplitEditor').style.display = 'none';
 
   saveState();
   updateAllCalculations();
-  renderIncomeHistory();
   showSuccessAnimation();
+}
+
 
   // Clear form
   document.getElementById('overrideIncome').value = '';
