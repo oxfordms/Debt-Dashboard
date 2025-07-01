@@ -1230,7 +1230,32 @@ window.addEventListener('DOMContentLoaded', () => {
             <!-- Quick Actions -->
             <div class="quick-actions">
                 <h2>Record Income</h2>
+<form onsubmit="recordIncome(event)" class="income-form">
+  <div class="form-group">
+    <label for="overrideIncome">Override Amount</label>
+    <input
+      type="number"
+      id="overrideIncome"
+      placeholder="Enter override amount"
+      step="0.01"
+      required
+    />
+  </div>
 
+  <div class="form-group">
+    <label for="reimbursementAmount">Reimbursement Amount</label>
+    <input
+      type="number"
+      id="reimbursementAmount"
+      placeholder="Reimbursement portion (optional)"
+      step="0.01"
+    />
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="small-button">Record Income</button>
+  </div>
+</form>
 
 <!-- Override: exclude from debt-reduction -->
 
