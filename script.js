@@ -650,51 +650,48 @@ function clearActivityLog() {
         updateActivityLog();
     }
 }
+// Show/hide reimbursement field based on income type
+document.getElementById("incomeType").addEventListener("change", function () {
+    const isOverride = this.value === "override";
+    const reimbGroup = document.getElementById("reimbursementGroup");
+    reimbGroup.style.display = isOverride ? "block" : "none";
+
+    if (!isOverride) {
+        document.getElementById("reimbursementAmount").value = 0;
+    }
+});
 
 // Income Recording
 function recordIncome(event) {
-  event.preventDefault();
+    event.preventDefault();
 
-  const overrideAmount = parseFloat(document.getElementById('overrideIncome')?.value || 0);
-  const reimbursementAmount = parseFloat(document.getElementById('reimbursementAmount')?.value || 0);
-  const netIncome = overrideAmount - reimbursementAmount;
+    const incomeType = document.getElementById("incomeType").value;
+    const grossAmount = parseFloat(document.getElementById("incomeAmount").value) || 0;
+    const reimbursementAmount = parseFloat(document.getElementById("reimbursementAmount").value) || 0;
 
-  if (netIncome <= 0) {
-    alert('Please enter a valid income amount (override must be greater than reimbursement).');
-    return;
-  }
+    const netAmount = incomeType === "override" ? grossAmount - reimbursementAmount : grossAmount;
 
-  const splits = state.defaultSplits;
-  const tithe = netIncome * (splits.tithe / 100);
-  const tax = netIncome * (splits.tax / 100);
-  const debt = netIncome * (splits.debt / 100);
-  const flexible = netIncome * (splits.flexible / 100);
+    const newEntry = {
+        date: new Date().toLocaleDateString(),
+        type: incomeType,
+        grossAmount: grossAmount,
+        reimbursement: incomeType === "override" ? reimbursementAmount : 0,
+        netAmount: netAmount,
+        excluded: false,  // default to included
+        notes: ""
+    };
 
-  const entry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    amount: overrideAmount,           // full check
-    reimbursementAmount,              // what was backed out
-    netIncome,                        // final allocation amount
-    tithe, tax, debt, flexible,
-    type: 'override',                 // hard-coded for now
-    notes: '',
-    splits
-  };
+    data.incomeEntries.push(newEntry);
+    saveData();
+    renderIncomeHistory();
 
-  if (!state.incomeHistory) state.incomeHistory = [];
-  state.incomeHistory.unshift(entry);
+    // Clear inputs
+    document.getElementById("incomeAmount").value = "";
+    document.getElementById("reimbursementAmount").value = "0";
+    document.getElementById("incomeType").value = "override";
 
-  saveState();
-  renderIncome();
-  renderSummary();
-  renderDebtTable();
-  updateBalancePreview();
-  showSuccessAnimation();
-
-  // Clear form
-  document.getElementById('overrideIncome').value = '';
-  document.getElementById('reimbursementAmount').value = '';
+    // Reset visibility
+    document.getElementById("reimbursementGroup").style.display = "block";
 }
 
         'Income',
