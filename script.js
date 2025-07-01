@@ -705,28 +705,17 @@ function clearActivityLog() {
 // Income Recording
 function recordIncome(event) {
   event.preventDefault();
-  console.log('🚀 recordIncome FIRED');
 
   const overrideAmount = parseFloat(document.getElementById('overrideIncome')?.value || 0);
   const reimbursementAmount = parseFloat(document.getElementById('reimbursementAmount')?.value || 0);
-  const incomeType = document.getElementById('incomeType')?.value || 'other';
-  const notes = document.getElementById('incomeNotes')?.value || '';
-
   const netIncome = overrideAmount - reimbursementAmount;
 
   if (netIncome <= 0) {
-    alert('Please enter a valid income amount (override must be greater than reimbursement)');
+    alert('Please enter a valid income amount (override must be greater than reimbursement).');
     return;
   }
 
-  const useDefault = document.getElementById('useDefaultSplit')?.checked ?? true;
-  let splits = useDefault ? { ...state.defaultSplits } : {
-    tithe: parseFloat(document.getElementById('customTithe')?.value || 0),
-    tax: parseFloat(document.getElementById('customTax')?.value || 0),
-    debt: parseFloat(document.getElementById('customDebt')?.value || 0),
-    flexible: parseFloat(document.getElementById('customFlexible')?.value || 0)
-  };
-
+  const splits = state.defaultSplits;
   const tithe = netIncome * (splits.tithe / 100);
   const tax = netIncome * (splits.tax / 100);
   const debt = netIncome * (splits.debt / 100);
@@ -735,114 +724,28 @@ function recordIncome(event) {
   const entry = {
     id: Date.now(),
     date: new Date().toISOString(),
-    amount: overrideAmount,  // store gross
-    reimbursementAmount,
-    netIncome,
+    amount: overrideAmount,           // full check
+    reimbursementAmount,              // what was backed out
+    netIncome,                        // final allocation amount
     tithe, tax, debt, flexible,
-    type: incomeType,
-    notes,
+    type: 'override',                 // hard-coded for now
+    notes: '',
     splits
   };
 
   if (!state.incomeHistory) state.incomeHistory = [];
   state.incomeHistory.unshift(entry);
 
-  console.log('✅ Entry saved:', entry);
-
-  // Reset form fields
-  document.getElementById('overrideIncome').value = '';
-  document.getElementById('reimbursementAmount').value = '';
-  document.getElementById('incomeNotes').value = '';
-  document.getElementById('useDefaultSplit').checked = true;
-  document.getElementById('customSplitEditor').style.display = 'none';
-
   saveState();
-  updateAllCalculations();
+  renderIncome();
+  renderSummary();
+  renderDebtTable();
+  updateBalancePreview();
   showSuccessAnimation();
-}
-
 
   // Clear form
   document.getElementById('overrideIncome').value = '';
   document.getElementById('reimbursementAmount').value = '';
-  document.getElementById('incomeNotes').value = '';
-}
-
-``
-  // --- 3. Determine split percentages ---------------------------
-  let splits;
-  if (useDefault) {
-    splits = { ...state.defaultSplits };
-
-    // W-2 income gets no tax reserve
-    if (['salary', 'bonus', 'other-w2', 'distribution'].includes(type)) {
-      splits.flexible += splits.tax;
-      splits.tax = 0;
-    }
-
-    // Pause-tax option for 1099
-    if (deferTax && ['commission', 'override', 'other-1099'].includes(type)) {
-      splits.flexible += splits.tax;
-      splits.tax = 0;
-    }
-  } else {
-    splits = {
-      tithe:     parseFloat(document.getElementById('customTithe').value),
-      tax:       parseFloat(document.getElementById('customTax').value),
-      debt:      parseFloat(document.getElementById('customDebt').value),
-      flexible:  parseFloat(document.getElementById('customFlexible').value)
-    };
-  }
-
-  // --- 4. Dollar allocations (on the *incomePortion* only) ------
-  const tithe = incomePortion * (splits.tithe / 100);
-  const tax   = incomePortion * (splits.tax   / 100);
-  const debt  = incomePortion * (splits.debt  / 100);
-  const flex  = incomePortion * (splits.flexible / 100);
-
-  // Track quarterly tax (1099 only)
-  if (['commission', 'override', 'other-1099'].includes(type)) {
-    state.quarterlyPaid += tax;
-  }
-
-  // --- 5. Record history entry ----------------------------------
-  const entry = {
-    id: Date.now(),
-    date: new Date().toISOString(),
-    amount: totalAmount,           // show the whole check
-    reimbursementAmount,           // <-- new field for reference
-    tithe, tax, debt, flexible,
-    type, notes, splits,
-    overrideDebtReduction: false,  // legacy flag retained (unused)
-    overrideReason: ''
-  };
-  state.incomeHistory.unshift(entry);
-
-  // Activity log
-  logActivity(
-    'Income',
-    `${getIncomeTypeLabel(type)} recorded` +
-      (isCombined ? ` (+$${reimbursementAmount.toFixed(2)} reimbursement)` : ''),
-    totalAmount,
-    'User',
-    { type, notes, reimbursementAmount, splits }
-  );
-
-  // --- 6. Apply debt payment from the income portion ------------
-  if (debt > 0) applyDebtPayment(debt);
-
-  // --- 7. Reset form --------------------------------------------
-  document.getElementById('overrideIncome').value = '';
-  document.getElementById('incomeNotes').value = '';
-  document.getElementById('useDefaultSplit').checked = true;
-  document.getElementById('deferTaxReserve').checked = false;
-  document.getElementById('combinedIncomeCheckbox').checked = false;
-  toggleReimbursementInput();           // hide the amount box
-  document.getElementById('reimbursementAmount').value = '';
-
-  showSuccessAnimation();
-  saveState();
-  updateAllCalculations();
 }
 
         'Income',
