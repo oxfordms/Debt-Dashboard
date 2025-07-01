@@ -125,14 +125,14 @@ function init() {
 
     if (incomeTypeSelect && reimbursementGroup) {
         // Set initial state on page load
-        if (incomeTypeSelect.value === 'override') {
+        if (incomeTypeSelect.value === 'Override') {
             reimbursementGroup.style.display = 'block';
         } else {
             reimbursementGroup.style.display = 'none';
         }
 
         incomeTypeSelect.addEventListener('change', function () {
-            if (this.value === 'override') {
+            if (this.value === 'Override') {
                 reimbursementGroup.style.display = 'block';
                 console.log('✅ Showing reimbursement field for Override income');
             } else {
