@@ -96,29 +96,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         
         /* Fixed Tabs */
-       /* === DIAGNOSTIC STYLING – TEMPORARY === */
-#reimbursementGroup {
-    display: block !important;
-    border: 3px solid red !important;
-    background: rgba(255, 0, 0, 0.1) !important;
-    min-height: 60px !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important;
-    z-index: 9999 !important;
-}
-
-.income-form {
-    border: 2px solid green !important;
-}
-
 .form-row {
-    border: 1px dashed blue !important;
-    min-height: 40px !important;
-}
-
-.form-group {
-    border: 1px dotted orange !important;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  width: 100%;
+  align-items: end;
 }
 
         .tabs {
