@@ -1234,47 +1234,41 @@ window.addEventListener('DOMContentLoaded', () => {
 <form onsubmit="recordIncome(event)" class="income-form">
 
   <!-- Row 1: Income Type -->
-  <div class="form-group">
-    <label for="incomeType">Income Type</label>
-    <select id="incomeType" required>
-      <option value="salary">Salary</option>
-      <option value="override" selected>Override</option>
-      <option value="commission">Commission</option>
-      <option value="distribution">Distribution</option>
-      <option value="bonus">Bonus</option>
-      <option value="other-w2">Other (W-2)</option>
-      <option value="other-1099">Other (1099)</option>
-    </select>
+  <div class="form-row">
+    <div class="form-group">
+      <label for="incomeType">Income Type</label>
+      <select id="incomeType" required>
+        <option value="">Select type...</option>
+        <option value="salary">Salary</option>
+        <option value="override" selected>Override</option>
+        <option value="commission">Commission</option>
+        <option value="distribution">Distribution</option>
+        <option value="bonus">Bonus</option>
+        <option value="other-w2">Other (W-2)</option>
+        <option value="other-1099">Other (1099)</option>
+      </select>
+    </div>
   </div>
 
-  <!-- Row 2: Amounts -->
-  <div class="form-group">
-    <label for="incomeAmount">Check Amount</label>
-    <input
-      type="number"
-      id="incomeAmount"
-      placeholder="Enter check amount"
-      step="0.01"
-      required
-    />
-  </div>
+  <!-- Row 2: Check Amount + Optional Reimbursement + Button -->
+  <div class="form-row">
+    <div class="form-group">
+      <label for="incomeAmount">Check Amount</label>
+      <input type="number" id="incomeAmount" step="0.01" placeholder="Enter check amount" required>
+    </div>
 
-  <div class="form-group" id="reimbursementGroup" style="display: none;">
-    <label for="reimbursementAmount">Reimbursement Amount</label>
-    <input
-      type="number"
-      id="reimbursementAmount"
-      placeholder="Reimbursement portion (optional)"
-      step="0.01"
-      value="0"
-    />
-  </div>
+    <div class="form-group" id="reimbursementGroup" style="display: none;">
+      <label for="reimbursementAmount">Reimbursement Amount</label>
+      <input type="number" id="reimbursementAmount" step="0.01" value="0" placeholder="Enter reimbursed expenses">
+    </div>
 
-  <div class="form-group">
-    <button type="submit" class="small-button">Record Income</button>
+    <div class="form-group">
+      <button type="submit" class="small-button">Record Income</button>
+    </div>
   </div>
 
 </form>
+
              
 <!-- Override: exclude from debt-reduction -->
 
