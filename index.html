@@ -1230,65 +1230,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <!-- Quick Actions -->
             <div class="quick-actions">
                 <h2>Record Income</h2>
-<form onsubmit="recordIncome(event)" class="income-form">
-  <div class="form-group">
-    <label>Override Amount</label>
-    <input type="number" id="overrideIncome" placeholder="Enter override amount" step="0.01" required>
-  </div>
-  <div class="form-group">
-    <label>Reimbursement Amount</label>
-    <input type="number" id="reimbursementAmount" placeholder="Reimbursement portion (optional)" step="0.01">
-  </div>
-  <div class="form-group">
-    <label>Income Type</label>
-    <select id="incomeType">
-      <option value="salary">Salary</option>
-      <option value="override">Override</option>
-      <option value="commission">Commission</option>
-      <option value="distribution">Distribution</option>
-      <option value="bonus">Bonus</option>
-      <option value="other-w2">Other (W-2)</option>
-      <option value="other-1099">Other (1099)</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Notes</label>
-    <input type="text" id="incomeNotes" placeholder="Optional notes">
-  </div>
-  <div class="checkbox-group">
-    <input type="checkbox" id="useDefaultSplit" checked>
-    <label for="useDefaultSplit">Use default income split</label>
-  </div>
-  <!-- Custom split editor (hidden until checkbox is unchecked) -->
-<div id="customSplitEditor" style="display:none; margin-top:12px;">
-  <div class="split-inputs">
-    <div class="split-input-group">
-      <label>Tithe %</label>
-      <input type="number" id="customTithe" min="0" max="100" step="0.1" value="10">
-    </div>
-    <div class="split-input-group">
-      <label>Tax Reserve %</label>
-      <input type="number" id="customTax" min="0" max="100" step="0.1" value="22.9">
-    </div>
-    <div class="split-input-group">
-      <label>Debt %</label>
-      <input type="number" id="customDebt" min="0" max="100" step="0.1" value="30">
-    </div>
-    <div class="split-input-group">
-      <label>Flexible %</label>
-      <input type="number" id="customFlexible" readonly style="background:var(--bg-tertiary);">
-    </div>
-  </div>
-</div>
-<div class="checkbox-group">
-  <input type="checkbox" id="deferTaxReserve">
-  <label for="deferTaxReserve">Defer tax reserve for this entry</label>
-</div>
-  
-  <div class="form-group">
-    <button type="submit" class="pulse">Record Income</button>
-  </div>
-</form>
+
 
 <!-- Override: exclude from debt-reduction -->
 
