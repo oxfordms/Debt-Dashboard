@@ -705,53 +705,57 @@ function recordIncome(event) {
   event.preventDefault();
   console.log('🚀 recordIncome FIRED');
 
-  const overrideEl = document.getElementById('overrideIncome');
-  const reimbursementEl = document.getElementById('reimbursementAmount');
-  const incomeTypeEl = document.getElementById('incomeType');
-  const incomeNotesEl = document.getElementById('incomeNotes');
+  const overrideAmount = parseFloat(document.getElementById('overrideIncome')?.value || 0);
+  const reimbursementAmount = parseFloat(document.getElementById('reimbursementAmount')?.value || 0);
+  const incomeType = document.getElementById('incomeType')?.value || 'other';
+  const notes = document.getElementById('incomeNotes')?.value || '';
 
-  console.log('📋 Element Check:', {
-    overrideIncome: overrideEl ? '✅' : '❌',
-    reimbursementAmount: reimbursementEl ? '✅' : '❌',
-    incomeType: incomeTypeEl ? '✅' : '❌',
-    incomeNotes: incomeNotesEl ? '✅' : '❌'
-  });
+  const netIncome = overrideAmount - reimbursementAmount;
+  console.log('💰 Values:', { overrideAmount, reimbursementAmount, netIncome, incomeType });
 
-  const overrideAmount = parseFloat(overrideEl?.value || 0);
-  const reimbursementAmount = parseFloat(reimbursementEl?.value || 0);
-  const incomeType = incomeTypeEl?.value || '';
-  const incomeNotes = incomeNotesEl?.value || '';
-
-  console.log('💰 Parsed Values:', {
-    overrideAmount,
-    reimbursementAmount,
-    incomeType,
-    incomeNotes
-  });
-
-  const isCombined = true;
-
-  if (!overrideAmount && !reimbursementAmount) {
-    console.log('⚠️ No income values entered.');
+  if (netIncome <= 0) {
+    alert('Please enter a valid income amount');
     return;
   }
 
-  const newEntry = {
-    type: incomeType,
-    amount: overrideAmount + reimbursementAmount,
-    override: overrideAmount,
-    reimbursement: reimbursementAmount,
-    date: new Date().toLocaleDateString(),
-    notes: incomeNotes
+  const useDefault = document.getElementById('useDefaultSplit')?.checked ?? true;
+  let splits = useDefault ? { ...state.defaultSplits } : {
+    tithe: parseFloat(document.getElementById('customTithe')?.value || 0),
+    tax: parseFloat(document.getElementById('customTax')?.value || 0),
+    debt: parseFloat(document.getElementById('customDebt')?.value || 0),
+    flexible: parseFloat(document.getElementById('customFlexible')?.value || 0)
   };
 
-  data.incomeEntries.push(newEntry);
-  saveState();
-  renderIncomeHistory();
-  clearIncomeForm();
+  const tithe = netIncome * (splits.tithe / 100);
+  const tax = netIncome * (splits.tax / 100);
+  const debt = netIncome * (splits.debt / 100);
+  const flexible = netIncome * (splits.flexible / 100);
 
-  console.log('✅ Entry saved:', newEntry);
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    amount: overrideAmount,
+    reimbursementAmount,
+    netIncome,
+    tithe, tax, debt, flexible,
+    type: incomeType,
+    notes,
+    splits
+  };
+
+  state.incomeHistory.unshift(entry);
+
+  saveState();
+  updateAllCalculations();
+  renderIncomeHistory();
+  showSuccessAnimation();
+
+  // Clear form
+  document.getElementById('overrideIncome').value = '';
+  document.getElementById('reimbursementAmount').value = '';
+  document.getElementById('incomeNotes').value = '';
 }
+
 ``
   // --- 3. Determine split percentages ---------------------------
   let splits;
