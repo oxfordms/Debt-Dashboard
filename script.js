@@ -154,52 +154,15 @@ function init() {
         }
         
         // Set up checkbox listener
-const defaultSplitToggle = document.getElementById('useDefaultSplit');
-if (defaultSplitToggle) {
-  defaultSplitToggle.addEventListener('change', function () {
-    const editor = document.getElementById('customSplitEditor');
-    if (editor) {
-      editor.style.display = this.checked ? 'none' : 'block';
-    }
 
-    if (!this.checked) {
-      updateCustomTaxBasedOnType();
-    }
-  });
-}
         
         // Set up income type listener
-const incomeTypeField = document.getElementById('incomeType');
-if (incomeTypeField) {
-  incomeTypeField.addEventListener('change', function () {
-    updateCustomTaxBasedOnType();
-  });
-}
 
         
         // Set up defer tax checkbox listener
 // Set up defer tax checkbox listener
-const deferCheckbox = document.getElementById('deferTaxReserve');
-if (deferCheckbox) {
-  deferCheckbox.addEventListener('change', function () {
-    const incomeTypeEl = document.getElementById('incomeType');
-    const incomeType = incomeTypeEl ? incomeTypeEl.value : null;
-    if (this.checked && (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099')) {
-      console.log('✅ Tax reserve will be deferred for this 1099 income');
-    }
-  });
-}
-
         
 // Set up listeners for live custom split inputs (main UI)
-['customTithe', 'customTax', 'customDebt'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el && el.addEventListener) {
-    el.addEventListener('input', updateCustomFlexible);
-  } else {
-    console.warn(`⚠️ Missing or invalid element: ${id}`);
-  }
-});
         
 ['editTithe', 'editTax', 'editDebt'].forEach(id => {
   const el = document.getElementById(id);
@@ -279,20 +242,6 @@ function toggleOverrideReason() {
 }
 
 // Update custom tax based on income type
-function updateCustomTaxBasedOnType() {
-    const incomeType = document.getElementById('incomeType').value;
-    const customTaxInput = document.getElementById('customTax');
-    
-    // Only apply tax to 1099 income types
-    if (incomeType === 'commission' || incomeType === 'override' || incomeType === 'other-1099') {
-        customTaxInput.value = state.pauseTaxReserve ? 0 : state.defaultSplits.tax;
-    } else {
-        // W-2 income types should not have tax reserve
-        customTaxInput.value = 0;
-    }
-    
-    updateCustomFlexible();
-}
 
 // Tab Management
 function switchTab(tabName, event) {
@@ -902,14 +851,6 @@ function updateEditFlexible() {
 }
 
 // Custom Split Management
-function updateCustomFlexible() {
-    const tithe = parseFloat(document.getElementById('customTithe').value) || 0;
-    const tax = parseFloat(document.getElementById('customTax').value) || 0;
-    const debt = parseFloat(document.getElementById('customDebt').value) || 0;
-    const flexible = Math.max(0, 100 - tithe - tax - debt);
-    
-    document.getElementById('customFlexible').value = flexible.toFixed(1);
-}
 
 function updateDefaultSplits(logChanges = false) {
     const oldSplits = { ...state.defaultSplits };
@@ -2744,13 +2685,6 @@ function updateCharts() {
 // UI Functions
 function showSuccessAnimation() {
     } // ← this closes showSuccessAnimation (line 2744)
-
-function toggleReimbursementInput() {
-  const group = document.getElementById('reimbursementInputGroup');
-  if (!group) return;
-  group.style.display = document.getElementById('combinedIncomeCheckbox').checked
-    ? 'block' : 'none';
-}
 
 function editTaxGoal() {
   const currentGoal = state.quarterlyTaxGoal * 2;
