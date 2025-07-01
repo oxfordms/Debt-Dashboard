@@ -1993,10 +1993,7 @@ if (deferCheckbox) {
             }
                 
                 // Set up custom split listeners
-                ['customTithe', 'customTax', 'customDebt'].forEach(id => {
-                    document.getElementById(id).addEventListener('input', updateCustomFlexible);
-                });
-                
+
                 // Set up edit modal split listeners
                 ['editTithe', 'editTax', 'editDebt'].forEach(id => {
                     document.getElementById(id).addEventListener('input', updateEditFlexible);
